@@ -14,10 +14,17 @@ const PLANET_R: Record<'small' | 'medium' | 'large', number> = { small: 24, medi
 
 const planetMass = (r: number) => Math.round((2000 * Math.pow(r, 2.4)) / 1000) * 1000;
 
-export function makeBody(tool: Exclude<Tool, 'fling' | 'erase'>, x: number, y: number, hue: number): Body {
+export function makeBody(
+  tool: Exclude<Tool, 'fling' | 'erase'>,
+  x: number,
+  y: number,
+  hue: number,
+): Body {
   const at = { x: Math.round(x), y: Math.round(y) };
-  if (tool === 'blackhole') return { kind: 'blackhole', ...at, r: 20, mass: 36_000_000, note: -1, hue };
-  if (tool === 'repulsor') return { kind: 'repulsor', ...at, r: 24, mass: -12_000_000, note: 0, hue };
+  if (tool === 'blackhole')
+    return { kind: 'blackhole', ...at, r: 20, mass: 36_000_000, note: -1, hue };
+  if (tool === 'repulsor')
+    return { kind: 'repulsor', ...at, r: 24, mass: -12_000_000, note: 0, hue };
   const r = PLANET_R[tool];
   return { kind: 'planet', ...at, r, mass: planetMass(r), note: 0, hue };
 }
@@ -29,7 +36,9 @@ export function tune(bodies: Body[]): Body[] {
     .filter(({ b }) => b.kind !== 'blackhole')
     .sort((a, b) => b.b.r - a.b.r || a.i - b.i);
   const notes = new Map<number, number>();
-  singers.forEach(({ i }, rank) => notes.set(i, Math.min(13, rank * 2 - (rank > 3 ? rank - 3 : 0))));
+  singers.forEach(({ i }, rank) =>
+    notes.set(i, Math.min(13, rank * 2 - (rank > 3 ? rank - 3 : 0))),
+  );
   return bodies.map((b, i) => ({ ...b, note: b.kind === 'blackhole' ? -1 : (notes.get(i) ?? 0) }));
 }
 
@@ -70,7 +79,17 @@ const KINDS = ['planet', 'blackhole', 'repulsor'] as const;
 
 /** Packs a layout into a compact, URL-safe code: "SW1.…". */
 export function encodeLayout(bodies: Body[], key: Key): string {
-  const payload = [key.root, MODE_NAMES.indexOf(key.mode), ...bodies.flatMap((b) => [KIND_CODE[b.kind], Math.round(b.x), Math.round(b.y), Math.round(b.r), Math.round(b.hue)])];
+  const payload = [
+    key.root,
+    MODE_NAMES.indexOf(key.mode),
+    ...bodies.flatMap((b) => [
+      KIND_CODE[b.kind],
+      Math.round(b.x),
+      Math.round(b.y),
+      Math.round(b.r),
+      Math.round(b.hue),
+    ]),
+  ];
   // The payload is numbers only, so its JSON is plain ASCII: one byte per character.
   const bytes = Array.from(JSON.stringify(payload), (c) => c.charCodeAt(0));
   return PREFIX + toBase64Url(bytes);
@@ -88,7 +107,8 @@ export function decodeLayout(code: string): { bodies: Body[]; key: Key } | null 
   } catch {
     return null;
   }
-  if (!Array.isArray(payload) || payload.length < 2 || payload.some((v) => typeof v !== 'number')) return null;
+  if (!Array.isArray(payload) || payload.length < 2 || payload.some((v) => typeof v !== 'number'))
+    return null;
   const nums = payload as number[];
   const mode: ModeName | undefined = MODE_NAMES[nums[1]];
   if (!mode || nums[0] < 36 || nums[0] > 84 || (nums.length - 2) % 5 !== 0) return null;

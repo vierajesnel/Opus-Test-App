@@ -4,8 +4,20 @@
  * and answers a touch with a soft spring, a tick, and (if enabled) a tap.
  */
 import { useCallback, useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle, type LayoutChangeEvent } from 'react-native';
-import { GestureDetector, usePanGesture, useTapGesture } from 'react-native-gesture-handler';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+  type LayoutChangeEvent,
+} from 'react-native';
+import {
+  GestureDetector,
+  useCompetingGestures,
+  usePanGesture,
+  useTapGesture,
+} from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
@@ -46,7 +58,16 @@ interface ButtonProps {
   compact?: boolean;
 }
 
-export function Button({ label, onPress, icon, kind = 'secondary', hint, disabled, style, compact }: ButtonProps) {
+export function Button({
+  label,
+  onPress,
+  icon,
+  kind = 'secondary',
+  hint,
+  disabled,
+  style,
+  compact,
+}: ButtonProps) {
   const { theme } = useAmbience();
   const p = theme.palette;
   const press = usePressScale();
@@ -97,7 +118,14 @@ interface IconButtonProps {
   hint?: string;
 }
 
-export function IconButton({ icon, label, onPress, size = 22, tone = 'surface', hint }: IconButtonProps) {
+export function IconButton({
+  icon,
+  label,
+  onPress,
+  size = 22,
+  tone = 'surface',
+  hint,
+}: IconButtonProps) {
   const { theme } = useAmbience();
   const press = usePressScale();
   return (
@@ -158,7 +186,13 @@ export function ToggleRow({ label, detail, value, onChange }: ToggleProps) {
   const p = theme.palette;
   const knob = useAnimatedStyle(() => ({
     transform: [
-      { translateX: reducedMotion ? (value ? 20 : 0) : withSpring(value ? 20 : 0, motion.springSnappy) },
+      {
+        translateX: reducedMotion
+          ? value
+            ? 20
+            : 0
+          : withSpring(value ? 20 : 0, motion.springSnappy),
+      },
     ],
   }));
   return (
@@ -182,7 +216,9 @@ export function ToggleRow({ label, detail, value, onChange }: ToggleProps) {
         )}
       </View>
       <View style={[styles.track, { backgroundColor: value ? p.accent : p.border }]}>
-        <Animated.View style={[styles.knob, { backgroundColor: value ? p.accentText : p.text }, knob]} />
+        <Animated.View
+          style={[styles.knob, { backgroundColor: value ? p.accentText : p.text }, knob]}
+        />
       </View>
     </Pressable>
   );
@@ -196,7 +232,13 @@ interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
 }
 
-export function SegmentedRow<T extends string>({ label, detail, value, options, onChange }: SegmentedProps<T>) {
+export function SegmentedRow<T extends string>({
+  label,
+  detail,
+  value,
+  options,
+  onChange,
+}: SegmentedProps<T>) {
   const { theme } = useAmbience();
   const p = theme.palette;
   return (
@@ -230,7 +272,10 @@ export function SegmentedRow<T extends string>({ label, detail, value, options, 
                 variant="caption"
                 numberOfLines={1}
                 maxFontSizeMultiplier={1.4}
-                style={{ color: selected ? p.accentText : p.text, fontWeight: selected ? '700' : '500' }}
+                style={{
+                  color: selected ? p.accentText : p.text,
+                  fontWeight: selected ? '700' : '500',
+                }}
               >
                 {o.label}
               </Text>
@@ -253,7 +298,10 @@ export function SliderRow({ label, value, onChange }: SliderProps) {
   const { theme } = useAmbience();
   const p = theme.palette;
   const [width, setWidth] = useState(1);
-  const commit = useCallback((v: number) => onChange(Math.round(Math.min(1, Math.max(0, v)) * 20) / 20), [onChange]);
+  const commit = useCallback(
+    (v: number) => onChange(Math.round(Math.min(1, Math.max(0, v)) * 20) / 20),
+    [onChange],
+  );
   const fromX = (x: number) => {
     'worklet';
     scheduleOnRN(commit, x / width);
@@ -275,6 +323,7 @@ export function SliderRow({ label, value, onChange }: SliderProps) {
       fromX(e.x);
     },
   });
+  const gesture = useCompetingGestures(pan, tap);
   const step = (delta: number) => {
     feedback();
     commit(value + delta);
@@ -285,7 +334,12 @@ export function SliderRow({ label, value, onChange }: SliderProps) {
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={label}
-      accessibilityValue={{ min: 0, max: 100, now: Math.round(value * 100), text: `${Math.round(value * 100)}%` }}
+      accessibilityValue={{
+        min: 0,
+        max: 100,
+        now: Math.round(value * 100),
+        text: `${Math.round(value * 100)}%`,
+      }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(e) => step(e.nativeEvent.actionName === 'increment' ? 0.1 : -0.1)}
     >
@@ -295,23 +349,23 @@ export function SliderRow({ label, value, onChange }: SliderProps) {
           {Math.round(value * 100)}%
         </Text>
       </View>
-      <GestureDetector gesture={pan}>
-        <GestureDetector gesture={tap}>
-          <View
-            style={styles.sliderHit}
-            onLayout={(e: LayoutChangeEvent) => setWidth(Math.max(1, e.nativeEvent.layout.width))}
-          >
-            <View style={[styles.sliderTrack, { backgroundColor: p.border }]}>
-              <View style={[styles.sliderFill, { width: `${value * 100}%`, backgroundColor: p.accent }]} />
-            </View>
+      <GestureDetector gesture={gesture}>
+        <View
+          style={styles.sliderHit}
+          onLayout={(e: LayoutChangeEvent) => setWidth(Math.max(1, e.nativeEvent.layout.width))}
+        >
+          <View style={[styles.sliderTrack, { backgroundColor: p.border }]}>
             <View
-              style={[
-                styles.sliderKnob,
-                { left: value * width - 11, backgroundColor: p.text, borderColor: p.accent },
-              ]}
+              style={[styles.sliderFill, { width: `${value * 100}%`, backgroundColor: p.accent }]}
             />
           </View>
-        </GestureDetector>
+          <View
+            style={[
+              styles.sliderKnob,
+              { left: value * width - 11, backgroundColor: p.text, borderColor: p.accent },
+            ]}
+          />
+        </View>
       </GestureDetector>
     </View>
   );

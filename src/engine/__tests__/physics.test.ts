@@ -163,7 +163,9 @@ describe('contacts', () => {
 
   it('loses a comet that leaves the sky and honours recall', () => {
     const w = world({});
-    expect(simulateFlight(w, { angle: Math.PI, power: 1 }, 0, false).status).toBe(FlightStatus.Lost);
+    expect(simulateFlight(w, { angle: Math.PI, power: 1 }, 0, false).status).toBe(
+      FlightStatus.Lost,
+    );
     const f = createFlightAt(w, WORLD_W / 2, 600, { angle: 0, power: 0.1 }, 0);
     recallFlight(f);
     expect(f.status).toBe(FlightStatus.Recalled);

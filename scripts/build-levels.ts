@@ -11,7 +11,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import { CHAPTERS, LEVELS_PER_CHAPTER, slotParams, slotTargetDifficulty } from '../src/content/chapters';
+import {
+  CHAPTERS,
+  LEVELS_PER_CHAPTER,
+  slotParams,
+  slotTargetDifficulty,
+} from '../src/content/chapters';
 import { allStarsMask, simulateFlight } from '../src/engine/physics';
 import { finalizeLevel, generateSky, runToCompletion } from '../src/gen/generator';
 import { hashString } from '../src/gen/rng';
@@ -96,7 +101,9 @@ function main(): void {
     }
   }
   fs.writeFileSync(OUT, JSON.stringify(levels) + '\n');
-  console.log(`\n${levels.length} skies verified in ${((Date.now() - started) / 1000).toFixed(1)}s → ${path.relative(process.cwd(), OUT)}`);
+  console.log(
+    `\n${levels.length} skies verified in ${((Date.now() - started) / 1000).toFixed(1)}s → ${path.relative(process.cwd(), OUT)}`,
+  );
 }
 
 main();

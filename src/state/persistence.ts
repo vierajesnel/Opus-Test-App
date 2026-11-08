@@ -48,7 +48,7 @@ const MIGRATIONS: Record<number, Migration> = {
     const levels: Record<string, unknown> = {};
     const old = (data.levels ?? {}) as Record<string, unknown>;
     for (const [id, best] of Object.entries(old)) {
-      if (typeof best === 'number') levels[id] = { best, grace: best === 1, flings: best, completedAt: 0 };
+      if (typeof best === 'number') levels[id] = { best, grace: best === 1, completedAt: 0 };
     }
     return { ...data, levels };
   },
@@ -83,11 +83,16 @@ function decode(raw: string | null): Decoded | null {
   return intact ? { ok: true, data } : { ok: false, partial: data };
 }
 
-export async function loadSave(store: KeyValueStore): Promise<{ save: SaveData; outcome: LoadOutcome }> {
+export async function loadSave(
+  store: KeyValueStore,
+): Promise<{ save: SaveData; outcome: LoadOutcome }> {
   let primaryRaw: string | null = null;
   let backupRaw: string | null = null;
   try {
-    [primaryRaw, backupRaw] = await Promise.all([store.getItem(PRIMARY_KEY), store.getItem(BACKUP_KEY)]);
+    [primaryRaw, backupRaw] = await Promise.all([
+      store.getItem(PRIMARY_KEY),
+      store.getItem(BACKUP_KEY),
+    ]);
   } catch {
     return { save: defaultSave(), outcome: 'reset' };
   }
@@ -100,8 +105,10 @@ export async function loadSave(store: KeyValueStore): Promise<{ save: SaveData; 
   if (backup?.ok) return { save: sanitizeSave(backup.data), outcome: 'restored-backup' };
 
   // Neither slot is intact; salvage whatever the sanitiser can make sense of.
-  const salvage = primary && !primary.ok ? primary.partial : backup && !backup.ok ? backup.partial : undefined;
-  if (salvage && typeof salvage === 'object') return { save: sanitizeSave(salvage), outcome: 'repaired' };
+  const salvage =
+    primary && !primary.ok ? primary.partial : backup && !backup.ok ? backup.partial : undefined;
+  if (salvage && typeof salvage === 'object')
+    return { save: sanitizeSave(salvage), outcome: 'repaired' };
   return { save: defaultSave(), outcome: 'reset' };
 }
 

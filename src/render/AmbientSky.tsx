@@ -84,7 +84,14 @@ export const AmbientSky = memo(function AmbientSky({
 
     // The Lamplighter at the focus: a breathing glow with four slow rays.
     const breathe = 0.5 + 0.5 * Math.sin(t * 0.9);
-    halo.setColor(Float32Array.of(starColor[0], starColor[1], starColor[2], (0.35 + breathe * 0.25) * intensity));
+    halo.setColor(
+      Float32Array.of(
+        starColor[0],
+        starColor[1],
+        starColor[2],
+        (0.35 + breathe * 0.25) * intensity,
+      ),
+    );
     canvas.drawCircle(cx, cy, span * 0.06, halo);
     const rays = Skia.PathBuilder.Make();
     const rayLen = span * (0.085 + breathe * 0.012);
@@ -115,7 +122,9 @@ export const AmbientSky = memo(function AmbientSky({
       };
       // Faint orbit ellipse.
       stroke.setStrokeWidth(1);
-      stroke.setColor(Float32Array.of(trailColor[0], trailColor[1], trailColor[2], 0.06 * intensity));
+      stroke.setColor(
+        Float32Array.of(trailColor[0], trailColor[1], trailColor[2], 0.06 * intensity),
+      );
       const ring = Skia.PathBuilder.Make();
       for (let i = 0; i <= 64; i++) {
         const [x, y] = at((i / 64) * Math.PI * 2);
@@ -133,13 +142,22 @@ export const AmbientSky = memo(function AmbientSky({
         const [x1, y1] = at(u1);
         const fade = 1 - i / 26;
         stroke.setStrokeWidth(1 + fade * 4);
-        stroke.setColor(Float32Array.of(trailColor[0], trailColor[1], trailColor[2], fade * fade * 0.8 * intensity));
+        stroke.setColor(
+          Float32Array.of(
+            trailColor[0],
+            trailColor[1],
+            trailColor[2],
+            fade * fade * 0.8 * intensity,
+          ),
+        );
         canvas.drawLine(x0, y0, x1, y1, stroke);
       }
       const [hx, hy] = at(head);
       fill.setColor(Float32Array.of(1, 0.95, 0.85, intensity * (glow ? 1 : 0)));
       if (glow) {
-        halo.setColor(Float32Array.of(trailColor[0], trailColor[1], trailColor[2], 0.6 * intensity));
+        halo.setColor(
+          Float32Array.of(trailColor[0], trailColor[1], trailColor[2], 0.6 * intensity),
+        );
         canvas.drawCircle(hx, hy, 9, halo);
         canvas.drawCircle(hx, hy, 3.2, fill);
       } else {

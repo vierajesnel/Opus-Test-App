@@ -62,7 +62,8 @@ export function chime(midi: number): Float32Array {
       v +=
         BAR_AMPS[k] *
         env *
-        (Math.sin(TAU * f * BAR_MODES[k] * t) + 0.6 * Math.sin(TAU * f * BAR_MODES[k] * 1.0017 * t));
+        (Math.sin(TAU * f * BAR_MODES[k] * t) +
+          0.6 * Math.sin(TAU * f * BAR_MODES[k] * 1.0017 * t));
     }
     out[i] = v;
   }

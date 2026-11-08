@@ -6,7 +6,13 @@ import type { SharedValue } from 'react-native-reanimated';
 
 import { DT } from '../../engine/constants';
 import { stepFlight } from '../../engine/physics';
-import { EventType, FlightStatus, type Flight, type FlightEvent, type World } from '../../engine/types';
+import {
+  EventType,
+  FlightStatus,
+  type Flight,
+  type FlightEvent,
+  type World,
+} from '../../engine/types';
 import { emit, PARTICLE, pushTrail } from '../../render/worklets/particles';
 
 /** Index of the body under (x, y), with a forgiving margin, or -1. */
@@ -117,7 +123,8 @@ export function advanceOrrery(
   o.heads.value = heads;
   for (const e of events) {
     if (e.type === EventType.Sing) singAt[e.index] = now;
-    else if (e.index === FlightStatus.Crashed) emit(particles, e.x, e.y, 24, 220, PARTICLE.crash, 0.8, 0, 6.3);
+    else if (e.index === FlightStatus.Crashed)
+      emit(particles, e.x, e.y, 24, 220, PARTICLE.crash, 0.8, 0, 6.3);
   }
   return events.length || count !== before ? { events, count } : null;
 }

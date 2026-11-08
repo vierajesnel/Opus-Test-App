@@ -19,8 +19,6 @@ export interface SweepConfig {
 
 /** Build-time resolution: 2° by ~6% steps. */
 export const FULL_SWEEP: SweepConfig = { angles: 180, powers: 16, minPower: 0.1, maxTime: 12 };
-/** Phone-friendly resolution for on-device generation. */
-export const QUICK_SWEEP: SweepConfig = { angles: 90, powers: 9, minPower: 0.12, maxTime: 10 };
 
 export function sweepLaunch(cfg: SweepConfig, angleIndex: number, powerIndex: number): Launch {
   return {

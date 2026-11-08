@@ -30,15 +30,26 @@ export function Toasts() {
   if (!toast) return null;
   return (
     <View style={[styles.wrap, { top: insets.top + space.sm }]} pointerEvents="box-none">
-      <Animated.View key={toast.id} entering={FadeInUp.duration(300)} exiting={FadeOutUp.duration(220)}>
+      <Animated.View
+        key={toast.id}
+        entering={FadeInUp.duration(300)}
+        exiting={FadeOutUp.duration(220)}
+      >
         <Pressable
           onPress={() => dismissToast(toast.id)}
           accessibilityRole="alert"
           accessibilityLabel={`${toast.kind === 'achievement' ? 'Achievement unlocked: ' : ''}${toast.title}. ${toast.body}`}
           accessibilityHint="Tap to dismiss"
-          style={[styles.toast, { backgroundColor: theme.palette.surfaceSolid, borderColor: theme.palette.star }]}
+          style={[
+            styles.toast,
+            { backgroundColor: theme.palette.surfaceSolid, borderColor: theme.palette.star },
+          ]}
         >
-          <Icon name={toast.kind === 'achievement' ? 'sparkle' : 'info'} size={22} color={theme.palette.star} />
+          <Icon
+            name={toast.kind === 'achievement' ? 'sparkle' : 'info'}
+            size={22}
+            color={theme.palette.star}
+          />
           <View style={styles.text}>
             <Text variant="label" caps tone="star">
               {toast.kind === 'achievement' ? 'Achievement' : 'Notice'}

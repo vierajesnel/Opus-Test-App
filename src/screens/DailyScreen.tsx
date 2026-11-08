@@ -29,13 +29,17 @@ function Charting() {
   const spin = useSharedValue(0);
   const [lineIndex, setLineIndex] = useState(0);
   useEffect(() => {
-    if (!reducedMotion) spin.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.linear }), -1);
+    if (!reducedMotion)
+      spin.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.linear }), -1);
     const t = setInterval(() => setLineIndex((i) => (i + 1) % LOADING_LINES.length), 1600);
     return () => clearInterval(t);
   }, [spin, reducedMotion]);
   const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value * 360}deg` }] }));
   return (
-    <View style={[styles.loading, { backgroundColor: theme.palette.bg }]} accessibilityLiveRegion="polite">
+    <View
+      style={[styles.loading, { backgroundColor: theme.palette.bg }]}
+      accessibilityLiveRegion="polite"
+    >
       <Animated.View style={style}>
         <Icon name="orrery" size={56} color={theme.palette.accent} strokeWidth={1.4} />
       </Animated.View>
@@ -118,5 +122,11 @@ export function DailyScreen() {
 }
 
 const styles = StyleSheet.create({
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.xxl },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.lg,
+    padding: space.xxl,
+  },
 });

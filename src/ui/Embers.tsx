@@ -4,10 +4,19 @@ import Animated, { ZoomIn } from 'react-native-reanimated';
 
 import { useAmbience } from './ThemeProvider';
 
-const FLAME = 'M12 2.5c1.6 3.2 5.5 5.8 5.5 10.5a5.5 5.5 0 0 1-11 0c0-2.6 1.3-4 2.4-5.4.3 1.5 1 2.4 2 2.9-.6-2.7.1-5.6 1.1-8z';
+const FLAME =
+  'M12 2.5c1.6 3.2 5.5 5.8 5.5 10.5a5.5 5.5 0 0 1-11 0c0-2.6 1.3-4 2.4-5.4.3 1.5 1 2.4 2 2.9-.6-2.7.1-5.6 1.1-8z';
 
 /** The ember rating: up to three little flames, lit or hollow. */
-export function Embers({ count, size = 22, animate = false }: { count: number; size?: number; animate?: boolean }) {
+export function Embers({
+  count,
+  size = 22,
+  animate = false,
+}: {
+  count: number;
+  size?: number;
+  animate?: boolean;
+}) {
   const { theme, reducedMotion } = useAmbience();
   const p = theme.palette;
   return (
@@ -26,7 +35,12 @@ export function Embers({ count, size = 22, animate = false }: { count: number; s
           </Svg>
         );
         return animate && !reducedMotion ? (
-          <Animated.View key={i} entering={ZoomIn.delay(250 + i * 180).springify().damping(12)}>
+          <Animated.View
+            key={i}
+            entering={ZoomIn.delay(250 + i * 180)
+              .springify()
+              .damping(12)}
+          >
             {flame}
           </Animated.View>
         ) : (

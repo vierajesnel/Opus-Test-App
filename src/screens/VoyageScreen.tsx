@@ -7,7 +7,14 @@ import { CHAPTERS, LEVELS_PER_CHAPTER } from '../content/chapters';
 import { PARS } from '../content/levels';
 import { useNav } from '../nav/Navigator';
 import { useSave } from '../state/app';
-import { CHAPTER_UNLOCK, chapterUnlocked, completedInChapter, embers, levelId, levelUnlocked } from '../state/progress';
+import {
+  CHAPTER_UNLOCK,
+  chapterUnlocked,
+  completedInChapter,
+  embers,
+  levelId,
+  levelUnlocked,
+} from '../state/progress';
 import type { SaveData } from '../state/schema';
 import { Panel } from '../ui/controls';
 import { Embers } from '../ui/Embers';
@@ -25,7 +32,13 @@ const WAVE = Array.from({ length: LEVELS_PER_CHAPTER }, (_, i) => ({
   y: Math.floor(i / 4) + (i % 2 ? 0.28 : 0),
 }));
 
-const ChapterCard = memo(function ChapterCard({ chapter, save }: { chapter: number; save: SaveData }) {
+const ChapterCard = memo(function ChapterCard({
+  chapter,
+  save,
+}: {
+  chapter: number;
+  save: SaveData;
+}) {
   const nav = useNav();
   const { theme } = useAmbience();
   const p = theme.palette;
@@ -57,7 +70,12 @@ const ChapterCard = memo(function ChapterCard({ chapter, save }: { chapter: numb
       </View>
       {unlocked ? (
         <View style={[styles.map, { height: 30 * 2 + rowH + 28 }]}>
-          <Svg width="100%" height="100%" viewBox={`0 0 ${width} ${30 * 2 + rowH + 28}`} style={StyleSheet.absoluteFill}>
+          <Svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${width} ${30 * 2 + rowH + 28}`}
+            style={StyleSheet.absoluteFill}
+          >
             <Path d={path} stroke={p.border} strokeWidth={2} strokeDasharray="4 6" fill="none" />
           </Svg>
           {WAVE.map((_, i) => {
@@ -73,7 +91,10 @@ const ChapterCard = memo(function ChapterCard({ chapter, save }: { chapter: numb
                 accessibilityRole="button"
                 accessibilityLabel={`Sky ${id}${rec ? `, ${embers(rec.best, PARS[id])} embers, best ${rec.best} flings` : open ? ', not yet woken' : ', locked'}`}
                 accessibilityState={{ disabled: !open }}
-                style={[styles.node, { left: `${(x / width) * 100}%`, top: y - NODE / 2, marginLeft: -NODE / 2 }]}
+                style={[
+                  styles.node,
+                  { left: `${(x / width) * 100}%`, top: y - NODE / 2, marginLeft: -NODE / 2 },
+                ]}
               >
                 <Svg width={NODE} height={NODE} viewBox="0 0 52 52">
                   <Circle
@@ -88,7 +109,11 @@ const ChapterCard = memo(function ChapterCard({ chapter, save }: { chapter: numb
                 </Svg>
                 <View style={styles.nodeLabel}>
                   {open ? (
-                    <Text variant="bodySmall" style={{ color: rec ? p.bg : p.text, fontWeight: '700' }} maxFontSizeMultiplier={1.2}>
+                    <Text
+                      variant="bodySmall"
+                      style={{ color: rec ? p.bg : p.text, fontWeight: '700' }}
+                      maxFontSizeMultiplier={1.2}
+                    >
                       {i + 1}
                     </Text>
                   ) : (
@@ -108,8 +133,8 @@ const ChapterCard = memo(function ChapterCard({ chapter, save }: { chapter: numb
         <View style={styles.lockedNote}>
           <Icon name="lock" size={18} color={p.textMuted} />
           <Text variant="caption" tone="muted" style={styles.flex}>
-            Wake {CHAPTER_UNLOCK} skies in “{CHAPTERS[chapter - 1].title}” and this chapter will open. The stars here are
-            heavy sleepers.
+            Wake {CHAPTER_UNLOCK} skies in “{CHAPTERS[chapter - 1].title}” and this chapter will
+            open. The stars here are heavy sleepers.
           </Text>
         </View>
       )}
@@ -122,7 +147,11 @@ export function VoyageScreen() {
   const save = useSave((s) => s);
   const total = Object.keys(save.levels).filter((id) => PARS[id] !== undefined).length;
   return (
-    <Screen title="The Voyage" subtitle={`${total} of ${CHAPTERS.length * LEVELS_PER_CHAPTER} skies awake`} onBack={nav.back}>
+    <Screen
+      title="The Voyage"
+      subtitle={`${total} of ${CHAPTERS.length * LEVELS_PER_CHAPTER} skies awake`}
+      onBack={nav.back}
+    >
       {CHAPTERS.map((_, c) => (
         <Animated.View key={c} entering={FadeInDown.delay(c * 70).duration(380)}>
           <ChapterCard chapter={c} save={save} />
@@ -140,7 +169,14 @@ const styles = StyleSheet.create({
   italic: { fontStyle: 'italic' },
   map: { width: '100%', maxWidth: 420, alignSelf: 'center' },
   node: { position: 'absolute', width: NODE, height: NODE + 14, alignItems: 'center' },
-  nodeLabel: { position: 'absolute', top: 0, width: NODE, height: NODE, alignItems: 'center', justifyContent: 'center' },
+  nodeLabel: {
+    position: 'absolute',
+    top: 0,
+    width: NODE,
+    height: NODE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   nodeEmbers: { position: 'absolute', top: NODE - 6 },
   lockedNote: { flexDirection: 'row', gap: space.sm, alignItems: 'center' },
 });

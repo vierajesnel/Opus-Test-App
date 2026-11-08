@@ -33,8 +33,6 @@ export interface LevelRecord {
   best: number;
   /** Cleared in a single fling at least once. */
   grace: boolean;
-  /** Flings thrown at this sky, ever. */
-  flings: number;
   completedAt: number;
 }
 
@@ -191,7 +189,6 @@ function levelRecord(v: Json): LevelRecord | null {
   return {
     best: Math.round(num(v.best, 1, 1, 999)),
     grace: bool(v.grace, false),
-    flings: Math.round(num(v.flings, v.best, 0)),
     completedAt: num(v.completedAt, 0, 0),
   };
 }
@@ -245,7 +242,10 @@ function orreryLayout(v: Json): OrreryLayout | null {
         'lydian',
       ),
     },
-    bodies: v.bodies.map(body).filter((b): b is Body => b !== null).slice(0, 12),
+    bodies: v.bodies
+      .map(body)
+      .filter((b): b is Body => b !== null)
+      .slice(0, 12),
     savedAt: num(v.savedAt, 0, 0),
   };
 }

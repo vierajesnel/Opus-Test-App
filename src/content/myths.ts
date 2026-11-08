@@ -128,7 +128,10 @@ const DEEDS: [string, string][] = [
   ],
   ['kept the last ember of the old sun warm through an endless winter', ''],
   ['unravelled half the galaxy by tugging on a single loose thread', ''],
-  ['stole the colour blue and gave back only most of it', 'stolen the colour blue and given back only most of it'],
+  [
+    'stole the colour blue and gave back only most of it',
+    'stolen the colour blue and given back only most of it',
+  ],
   ['guided lost comets home, charging nothing but a story', ''],
   ['tried to climb the sky and got stuck, rather gracefully, halfway', ''],
   ['argued with gravity for a thousand years, and won exactly once', ''],
@@ -169,7 +172,9 @@ export function nameConstellation(stars: Star[], seed: number): Constellation {
           ? NOUNS.three
           : NOUNS.broad;
   const noun = rng.pick(pool);
-  const name = rng.chance(0.72) ? `The ${rng.pick(ADJECTIVES)} ${noun}` : `The ${noun} of ${rng.pick(PLACES)}`;
+  const name = rng.chance(0.72)
+    ? `The ${rng.pick(ADJECTIVES)} ${noun}`
+    : `The ${noun} of ${rng.pick(PLACES)}`;
   const opener = rng.pick(OPENERS);
   const myth = `${sentence(opener, rng.pick(DEEDS))} ${rng.pick(CODAS)}`;
   return { name, myth, edges: spanningEdges(stars) };

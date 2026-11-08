@@ -50,14 +50,17 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 'slingshot',
     title: 'Slingshot',
     blurb: 'Leave a gravity well more than twice as fast as you launched.',
-    check: ({ flight }) => !!flight && flight.telemetry.maxSpeed >= flight.telemetry.launchSpeed * 2,
+    check: ({ flight }) =>
+      !!flight && flight.telemetry.maxSpeed >= flight.telemetry.launchSpeed * 2,
   },
   {
     id: 'horizon',
     title: 'Event Horizon Tourist',
     blurb: 'Pass within a breath of a black hole and live to brag.',
     check: ({ flight }) =>
-      !!flight && flight.status !== FlightStatus.Swallowed && flight.telemetry.closestBlackHole < 1.5,
+      !!flight &&
+      flight.status !== FlightStatus.Swallowed &&
+      flight.telemetry.closestBlackHole < 1.5,
   },
   {
     id: 'spaghetti',

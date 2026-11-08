@@ -75,7 +75,14 @@ function hueRgb(h: number): Rgb {
   return [k(5), k(3), k(1)];
 }
 
-function drawSpikes(canvas: SkCanvas, x: number, y: number, len: number, angle: number, paint: SkPaint): void {
+function drawSpikes(
+  canvas: SkCanvas,
+  x: number,
+  y: number,
+  len: number,
+  angle: number,
+  paint: SkPaint,
+): void {
   'worklet';
   const path = Skia.PathBuilder.Make();
   for (let k = 0; k < 4; k++) {
@@ -125,7 +132,9 @@ function drawPortals(canvas: SkCanvas, s: SceneInput, stroke: SkPaint): void {
       for (let ring = 0; ring < 3; ring++) {
         const rr = w.r * (1 - ring * 0.24);
         stroke.setStrokeWidth(2.4 - ring * 0.5);
-        stroke.setPathEffect(Skia.PathEffect.MakeDash([rr * 0.5, rr * 0.35], spin * 30 * (ring + 1)));
+        stroke.setPathEffect(
+          Skia.PathEffect.MakeDash([rr * 0.5, rr * 0.35], spin * 30 * (ring + 1)),
+        );
         setRgb(stroke, s.glow ? s.colors.guide : s.colors.ink, 0.75 - ring * 0.18);
         canvas.drawCircle(x, y, rr, stroke);
       }
@@ -139,7 +148,14 @@ function drawPortals(canvas: SkCanvas, s: SceneInput, stroke: SkPaint): void {
   }
 }
 
-function drawStars(canvas: SkCanvas, s: SceneInput, fill: SkPaint, stroke: SkPaint, glowPaint: SkPaint, predicted: number): void {
+function drawStars(
+  canvas: SkCanvas,
+  s: SceneInput,
+  fill: SkPaint,
+  stroke: SkPaint,
+  glowPaint: SkPaint,
+  predicted: number,
+): void {
   'worklet';
   const stars = s.world.stars;
   for (let i = 0; i < stars.length; i++) {
@@ -210,7 +226,13 @@ function drawGuide(canvas: SkCanvas, s: SceneInput, fill: SkPaint, stroke: SkPai
   setRgb(fill, s.colors.guide, 0.9);
   canvas.drawCircle(bx, by, 6 + s.aimPower * 4, fill);
 
-  const pred = predictPath(s.world, { angle: s.aimAngle, power: s.aimPower }, s.woken, s.preview, 7);
+  const pred = predictPath(
+    s.world,
+    { angle: s.aimAngle, power: s.aimPower },
+    s.woken,
+    s.preview,
+    7,
+  );
   const pts = pred.points;
   const n = pts.length / 2;
   for (let k = 1; k < n; k++) {
@@ -229,7 +251,13 @@ function drawGuide(canvas: SkCanvas, s: SceneInput, fill: SkPaint, stroke: SkPai
   return pred.wakes;
 }
 
-function drawTrail(canvas: SkCanvas, s: SceneInput, trail: number[], alpha: number, stroke: SkPaint): void {
+function drawTrail(
+  canvas: SkCanvas,
+  s: SceneInput,
+  trail: number[],
+  alpha: number,
+  stroke: SkPaint,
+): void {
   'worklet';
   const n = trail.length / 2;
   if (n < 2 || alpha <= 0) return;
@@ -259,11 +287,24 @@ function drawParticles(canvas: SkCanvas, s: SceneInput, fill: SkPaint): void {
               ? hueRgb((s.clock * 120 + i) % 360)
               : s.colors.trail;
     setRgb(fill, c, life * (kind === PARTICLE.comet ? 0.7 : 0.95));
-    canvas.drawCircle(p[i], p[i + 1], (kind === PARTICLE.comet ? 2.2 : 3) * (0.4 + life * 0.8), fill);
+    canvas.drawCircle(
+      p[i],
+      p[i + 1],
+      (kind === PARTICLE.comet ? 2.2 : 3) * (0.4 + life * 0.8),
+      fill,
+    );
   }
 }
 
-function drawComet(canvas: SkCanvas, x: number, y: number, alpha: number, s: SceneInput, fill: SkPaint, glowPaint: SkPaint): void {
+function drawComet(
+  canvas: SkCanvas,
+  x: number,
+  y: number,
+  alpha: number,
+  s: SceneInput,
+  fill: SkPaint,
+  glowPaint: SkPaint,
+): void {
   'worklet';
   if (alpha <= 0) return;
   const head = s.aurora ? hueRgb((s.clock * 90) % 360) : s.colors.head;

@@ -8,11 +8,24 @@ import { useAmbience } from '../ui/ThemeProvider';
 import { space } from '../ui/theme';
 
 /** A designed dead end: something gentle to read and a way back. */
-export function EmptyState({ title, body, onBack }: { title: string; body: string; onBack: () => void }) {
+export function EmptyState({
+  title,
+  body,
+  onBack,
+}: {
+  title: string;
+  body: string;
+  onBack: () => void;
+}) {
   const { theme } = useAmbience();
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.root, { backgroundColor: theme.palette.bg, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: theme.palette.bg, paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
       <Icon name="sparkle" size={40} color={theme.palette.starSleep} />
       <Text variant="title" align="center" accessibilityRole="header">
         {title}
@@ -26,5 +39,11 @@ export function EmptyState({ title, body, onBack }: { title: string; body: strin
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.xxl },
+  root: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.lg,
+    padding: space.xxl,
+  },
 });

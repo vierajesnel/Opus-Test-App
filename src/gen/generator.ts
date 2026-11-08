@@ -414,5 +414,12 @@ function estimateDifficulty(sky: GeneratedSky): number {
   const meanWindow = sky.windows.reduce((a, b) => a + b, 0) / Math.max(1, sky.windows.length);
   const stars = sky.world.stars.length;
   const hazards = sky.world.bodies.filter((b) => b.kind !== 'planet').length;
-  return Math.min(1, 0.15 + (1 - meanWindow) * 0.4 + stars * 0.04 + hazards * 0.06 + (sky.launches.length - 1) * 0.08);
+  return Math.min(
+    1,
+    0.15 +
+      (1 - meanWindow) * 0.4 +
+      stars * 0.04 +
+      hazards * 0.06 +
+      (sky.launches.length - 1) * 0.08,
+  );
 }

@@ -4,7 +4,15 @@
  * haptics, the Lamplighter's commentary, saved progress, and results.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, AppState, ScrollView, Share, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  AccessibilityInfo,
+  AppState,
+  ScrollView,
+  Share,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,6 +28,7 @@ import { haptic } from '../ui/haptics';
 import { useAmbience } from '../ui/ThemeProvider';
 import { space } from '../ui/theme';
 import { fitCamera } from './camera';
+import { useBackInterceptor } from '../nav/Navigator';
 import { SettingsList } from '../screens/SettingsList';
 import { Button } from '../ui/controls';
 import { AimPad, Bubble, CompleteSheet, GhostHand, Hud, PauseSheet, Scrim } from './overlays';
@@ -73,6 +82,7 @@ export function Play(props: Props) {
   const [result, setResult] = useState<Result | null>(null);
   const [misses, setMisses] = useState(0);
   const [launched, setLaunched] = useState(false);
+  const [inFlight, setInFlight] = useState(false);
   const [pad, setPad] = useState({ angle: -Math.PI / 2, power: 0.5 });
 
   const flingsRef = useRef(0);
@@ -81,7 +91,10 @@ export function Play(props: Props) {
   const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  const constellation = useMemo(() => nameConstellation(world.stars, level.seed), [world.stars, level.seed]);
+  const constellation = useMemo(
+    () => nameConstellation(world.stars, level.seed),
+    [world.stars, level.seed],
+  );
   const edges = useMemo(() => constellation.edges.flat(), [constellation]);
 
   useEffect(() => {
@@ -98,6 +111,7 @@ export function Play(props: Props) {
   const onLaunch = useCallback(() => {
     flingsRef.current += 1;
     setFlings(flingsRef.current);
+    setInFlight(true);
     setMessage(null);
     if (!launched) {
       setLaunched(true);
@@ -128,7 +142,9 @@ export function Play(props: Props) {
       wokenRef.current = mask;
       setWoken(mask);
       if (screenReader && events.some((e) => e.type === EventType.Wake)) {
-        AccessibilityInfo.announceForAccessibility(`Star awake. ${countBits(mask)} of ${world.stars.length}.`);
+        AccessibilityInfo.announceForAccessibility(
+          `Star awake. ${countBits(mask)} of ${world.stars.length}.`,
+        );
       }
     },
     [level.key, world, screenReader],
@@ -157,7 +173,10 @@ export function Play(props: Props) {
       director.sfx('lost');
     }
     const gained = countBits(end.newlyWoken);
-    reportFlight({ status: s, newlyWoken: end.newlyWoken, time: end.time, telemetry: end.telemetry }, gained, null);
+    reportFlight(
+      { status: s, newlyWoken: end.newlyWoken, time: end.time, telemetry: end.telemetry },
+      gained,
+    );
 
     if ((end.woken & all) === all) {
       const count = flingsRef.current;
@@ -168,7 +187,10 @@ export function Play(props: Props) {
       later(() => director.bloom(level.key), 250);
       haptic.success();
       setMessage(count === 1 ? line('grace') : count <= level.par ? line('par') : line('over'));
-      later(() => setResult({ flings: count, improved: outcome.improved }), reducedMotion ? 400 : 1900);
+      later(
+        () => setResult({ flings: count, improved: outcome.improved }),
+        reducedMotion ? 400 : 1900,
+      );
       return;
     }
 
@@ -188,7 +210,10 @@ export function Play(props: Props) {
                   ? 'recall'
                   : 'nothing';
     setMessage(line(group));
-    later(() => sim.resetForAim(), 650);
+    later(() => {
+      sim.resetForAim();
+      setInFlight(false);
+    }, 650);
   }
 
   // Pause on backgrounding; persist immediately.
@@ -211,6 +236,18 @@ export function Play(props: Props) {
     sim.setPaused(false);
   };
 
+  // Android back: close settings, then resume, else pause. Only a finished sky lets it leave.
+  useBackInterceptor(() => {
+    if (result) return false;
+    if (settingsOpen) setSettingsOpen(false);
+    else if (paused) resume();
+    else {
+      setPaused(true);
+      sim.setPaused(true);
+    }
+    return true;
+  });
+
   const restart = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
@@ -220,6 +257,7 @@ export function Play(props: Props) {
     setWoken(0);
     setResult(null);
     setMisses(0);
+    setInFlight(false);
     setMessage('A clean sky. Again, with feeling.');
     sim.restart();
     resume();
@@ -236,8 +274,9 @@ export function Play(props: Props) {
 
   const showHint = () => {
     const next: Launch =
-      level.solution.find((shot) => simulateFlight(world, shot, wokenRef.current, true).newlyWoken !== 0) ??
-      level.solution[0];
+      level.solution.find(
+        (shot) => simulateFlight(world, shot, wokenRef.current, true).newlyWoken !== 0,
+      ) ?? level.solution[0];
     sim.aimAngle.set(next.angle);
     sim.aimPower.set(next.power);
     sim.aiming.set(true);
@@ -308,7 +347,10 @@ export function Play(props: Props) {
         accessibilityLabel={`${props.title}. ${wokenCount} of ${world.stars.length} stars awake. Drag anywhere to aim, release to fling.`}
       />
       {props.showGhost && !launched && !padVisible && (
-        <GhostHand x={camera.x + world.launchX * camera.scale} y={camera.y + world.launchY * camera.scale} />
+        <GhostHand
+          x={camera.x + world.launchX * camera.scale}
+          y={camera.y + world.launchY * camera.scale}
+        />
       )}
       <Hud
         layout={landscape ? 'side' : 'top'}
@@ -335,6 +377,7 @@ export function Play(props: Props) {
       {padVisible && (
         <AimPad
           side={landscape}
+          canFling={!inFlight}
           angleDeg={toDegrees(pad.angle)}
           power={pad.power}
           readout={padReadout}
@@ -361,7 +404,10 @@ export function Play(props: Props) {
           onLeave={props.onLeave}
           onShare={
             props.shareText
-              ? () => void Share.share({ message: props.shareText!(result.flings) }).catch(() => undefined)
+              ? () =>
+                  void Share.share({ message: props.shareText!(result.flings) }).catch(
+                    () => undefined,
+                  )
               : undefined
           }
         />
@@ -378,11 +424,21 @@ export function Play(props: Props) {
       )}
       {settingsOpen && (
         <Scrim>
-          <View style={[styles.settings, { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg }]}>
+          <View
+            style={[
+              styles.settings,
+              { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg },
+            ]}
+          >
             <ScrollView contentContainerStyle={styles.settingsContent}>
               <SettingsList inGame />
             </ScrollView>
-            <Button kind="primary" label="Done" icon="check" onPress={() => setSettingsOpen(false)} />
+            <Button
+              kind="primary"
+              label="Done"
+              icon="check"
+              onPress={() => setSettingsOpen(false)}
+            />
           </View>
         </Scrim>
       )}

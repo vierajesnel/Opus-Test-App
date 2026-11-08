@@ -33,7 +33,9 @@ export function shallowEqual<T>(a: T, b: T): boolean {
   if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) return false;
   const ka = Object.keys(a);
   if (ka.length !== Object.keys(b).length) return false;
-  return ka.every((k) => Object.is((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+  return ka.every((k) =>
+    Object.is((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+  );
 }
 
 /** Subscribes to `selector(state)`, re-rendering only when it changes under `isEqual`. */

@@ -27,12 +27,10 @@ export interface Palette {
   accentText: string;
   star: string;
   starSleep: string;
-  comet: string;
   trail: string;
   guide: string;
   danger: string;
   success: string;
-  planetLight: string;
   ink: string;
   grid: string;
   scrim: string;
@@ -64,12 +62,10 @@ const midnight: Theme = {
     accentText: '#1A1006',
     star: '#FFE7A8',
     starSleep: '#8C93C9',
-    comet: '#FFD9A0',
     trail: '#FF9F5A',
     guide: '#FFE3B8',
     danger: '#FF7A93',
     success: '#7DF0C9',
-    planetLight: '#FFF4DE',
     ink: '#C9D0FF',
     grid: 'rgba(160, 170, 255, 0.07)',
     scrim: 'rgba(3, 4, 12, 0.72)',
@@ -94,12 +90,10 @@ const almanac: Theme = {
     accentText: '#FFF6EA',
     star: '#B9791C',
     starSleep: '#9E8F77',
-    comet: '#A63C22',
     trail: '#A63C22',
     guide: '#2E3A59',
     danger: '#A3263F',
     success: '#2F6B4F',
-    planetLight: '#FFFFFF',
     ink: '#2E3A59',
     grid: 'rgba(46, 58, 89, 0.12)',
     scrim: 'rgba(39, 30, 21, 0.45)',
@@ -132,9 +126,6 @@ export const type = {
 
 /** Motion language: quick and soft. Springs settle, they don't wobble. */
 export const motion = {
-  fast: 160,
-  base: 260,
-  slow: 420,
   spring: { damping: 18, stiffness: 180, mass: 1 },
   springSnappy: { damping: 15, stiffness: 300, mass: 0.8 },
 } as const;

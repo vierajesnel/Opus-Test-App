@@ -63,7 +63,6 @@ export function recordCompletion(
   const record: LevelRecord = {
     best,
     grace: (prev?.grace ?? false) || flings === 1,
-    flings: prev?.flings ?? 0,
     completedAt: prev?.completedAt ?? now,
   };
   return {

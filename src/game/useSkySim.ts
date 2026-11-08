@@ -5,7 +5,12 @@
  * thread for things JS must do: sound, haptics, saving, and the HUD.
  */
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { cancelAnimation, useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import {
+  cancelAnimation,
+  useFrameCallback,
+  useSharedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { recallFlight } from '../engine/physics';
@@ -52,7 +57,11 @@ function useStable<T extends (...args: never[]) => void>(fn: T): T {
   return useCallback((...args: Parameters<T>) => ref.current(...args), []) as T;
 }
 
-export function useSkySim(initialWorld: World, handlers: SimHandlers, reducedMotion: boolean): SkySim {
+export function useSkySim(
+  initialWorld: World,
+  handlers: SimHandlers,
+  reducedMotion: boolean,
+): SkySim {
   const world = useSharedValue<World>(initialWorld);
   const phase = useSharedValue<number>(PHASE.aim);
   const flight = useSharedValue<Flight | null>(null);

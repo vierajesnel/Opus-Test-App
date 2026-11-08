@@ -68,7 +68,10 @@ export function LogbookScreen() {
             <Stat value={`${fmt(s.longestFlight, 1)}s`} label="longest flight" />
             <Stat value={fmt(s.fastest)} label="top speed (u/s)" />
             <Stat value={`${s.maxRevolutions}`} label="most orbits, one flight" />
-            <Stat value={s.closestBlackHole ? `${fmt(s.closestBlackHole, 2)}×` : '—'} label="closest to a black hole" />
+            <Stat
+              value={s.closestBlackHole ? `${fmt(s.closestBlackHole, 2)}×` : '—'}
+              label="closest to a black hole"
+            />
             <Stat value={fmt(s.notesSung + s.orreryNotes)} label="notes sung" />
             <Stat value={fmt(s.crashes)} label="crashes" />
             <Stat value={fmt(s.hops)} label="wormhole hops" />
@@ -98,11 +101,18 @@ export function LogbookScreen() {
             return (
               <View
                 key={a.id}
-                style={[styles.achievement, { borderColor: theme.palette.border, opacity: got ? 1 : 0.6 }]}
+                style={[
+                  styles.achievement,
+                  { borderColor: theme.palette.border, opacity: got ? 1 : 0.6 },
+                ]}
                 accessible
                 accessibilityLabel={`${hidden ? 'Secret achievement' : a.title}. ${got ? 'Unlocked.' : 'Locked.'} ${hidden ? '' : a.blurb}`}
               >
-                <Icon name={got ? 'sparkle' : hidden ? 'lock' : 'sparkle'} size={20} color={got ? theme.palette.star : theme.palette.textFaint} />
+                <Icon
+                  name={got ? 'sparkle' : hidden ? 'lock' : 'sparkle'}
+                  size={20}
+                  color={got ? theme.palette.star : theme.palette.textFaint}
+                />
                 <View style={styles.flex}>
                   <Text variant="body" style={styles.bold}>
                     {hidden ? '???' : a.title}

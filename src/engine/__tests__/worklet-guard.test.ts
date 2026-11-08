@@ -73,8 +73,9 @@ function forwardReferences(ast: t.File, file: string): string[] {
     Identifier(p) {
       const target = declaredAt.get(p.node.name);
       if (target === undefined || !p.isReferencedIdentifier()) return;
-      const owner = p.findParent((q) => q.isFunction() && q.parentPath?.isProgram() === true)
-        ?? p.findParent((q) => q.isFunction() && q.parentPath?.isExportNamedDeclaration() === true);
+      const owner =
+        p.findParent((q) => q.isFunction() && q.parentPath?.isProgram() === true) ??
+        p.findParent((q) => q.isFunction() && q.parentPath?.isExportNamedDeclaration() === true);
       if (!owner || (owner.node.start ?? 0) > target) return;
       const line = p.node.loc?.start.line ?? 0;
       found.push(`${path.relative(ROOT, file)}:${line} uses ${p.node.name} before it is defined`);

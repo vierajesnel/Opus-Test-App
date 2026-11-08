@@ -12,7 +12,7 @@ import type { AudioBackend, Clip } from './types';
 /** Bump when synthesis changes so stale cached renders are ignored. */
 const CACHE_DIR = 'starwake-audio-v1';
 const VOICES_PER_CLIP = 3;
-const MAX_CLIPS = 40;
+const MAX_CLIPS = 30;
 const FADE_STEP_MS = 40;
 
 interface Entry {
@@ -87,7 +87,13 @@ export function createBackend(): AudioBackend {
         const clip = render();
         await file.write(encodeWav(clip.samples, clip.sampleRate));
       }
-      clips.set(id, { uri: file.uri, voices: [], next: 0, lastUsed: Date.now() });
+      // One voice is created up front so the first play doesn't pay the load latency.
+      clips.set(id, {
+        uri: file.uri,
+        voices: [createAudioPlayer({ uri: file.uri })],
+        next: 0,
+        lastUsed: Date.now(),
+      });
       evict();
     },
 

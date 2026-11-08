@@ -11,14 +11,19 @@ describe('orrery layouts', () => {
     expect(code).toMatch(/^SW1\.[A-Za-z0-9_-]+$/);
     const back = decodeLayout(code)!;
     expect(back.key).toEqual(key);
-    expect(back.bodies.map((b) => [b.kind, b.x, b.y, b.r])).toEqual(bodies.map((b) => [b.kind, b.x, b.y, b.r]));
+    expect(back.bodies.map((b) => [b.kind, b.x, b.y, b.r])).toEqual(
+      bodies.map((b) => [b.kind, b.x, b.y, b.r]),
+    );
   });
 
   it('rejects malformed or hostile codes', () => {
     expect(decodeLayout('hello')).toBeNull();
     expect(decodeLayout('SW1.%%%')).toBeNull();
     expect(decodeLayout('SW1.' + 'A'.repeat(5))).toBeNull();
-    const bad = encodeLayout([{ ...makeBody('small', 0, 0, 0), r: 500 }], { root: 62, mode: 'ionian' });
+    const bad = encodeLayout([{ ...makeBody('small', 0, 0, 0), r: 500 }], {
+      root: 62,
+      mode: 'ionian',
+    });
     expect(decodeLayout(bad)).toBeNull();
   });
 
@@ -36,7 +41,13 @@ describe('orrery layouts', () => {
 });
 
 describe('orrery worklets', () => {
-  const world: World = { launchX: 0, launchY: 0, bodies: starterLayout(), stars: [], wormholes: [] };
+  const world: World = {
+    launchX: 0,
+    launchY: 0,
+    bodies: starterLayout(),
+    stars: [],
+    wormholes: [],
+  };
 
   it('hit-tests bodies with a margin', () => {
     expect(bodyAt(world, 450, 560, 10)).toBe(0);
@@ -50,7 +61,8 @@ describe('orrery worklets', () => {
     const comets = [doomed, wanderer];
     const trails = [[], []] as number[][];
     const events: { type: number }[] = [];
-    for (let i = 0; i < 120 && comets.length > 1; i++) stepComets(world, comets, trails, 1 / 60, events as never);
+    for (let i = 0; i < 120 && comets.length > 1; i++)
+      stepComets(world, comets, trails, 1 / 60, events as never);
     expect(comets).toHaveLength(1);
     expect(trails).toHaveLength(1);
     expect(doomed.status).toBe(FlightStatus.Crashed);

@@ -143,7 +143,9 @@ function useBackdrop(props: SkyCanvasProps) {
           { scale: camera.scale },
         ]}
       >
-        {!theme.glow && <Path path={grid} style="stroke" strokeWidth={1 / camera.scale} color={p.grid} />}
+        {!theme.glow && (
+          <Path path={grid} style="stroke" strokeWidth={1 / camera.scale} color={p.grid} />
+        )}
         <Path
           path={frame}
           style="stroke"
@@ -154,16 +156,11 @@ function useBackdrop(props: SkyCanvasProps) {
       </Group>
     </Group>
   );
-  return useTexture(element, { width: Math.round(texW * density), height: Math.round(texH * density) }, [
-    width,
-    height,
-    theme.name,
-    hue,
-    seed,
-    camera.scale,
-    camera.x,
-    camera.y,
-  ]);
+  return useTexture(
+    element,
+    { width: Math.round(texW * density), height: Math.round(texH * density) },
+    [width, height, theme.name, hue, seed, camera.scale, camera.x, camera.y],
+  );
 }
 
 interface NodeProps {
@@ -178,8 +175,8 @@ interface NodeProps {
 
 const PlanetNode = memo(function PlanetNode({ body, index, world, time, clock, theme }: NodeProps) {
   const ink = theme.glow ? 0 : 1;
-  const colA = theme.glow ? hsl(body.hue, 0.55, 0.4) : hsl(body.hue, 0.35, 0.72);
-  const colB = theme.glow ? hsl(body.hue + 28, 0.65, 0.68) : hsl(body.hue + 20, 0.3, 0.84);
+  const colA = theme.glow ? hsl(body.hue, 0.55, 0.4) : hsl(body.hue, 0.42, 0.6);
+  const colB = theme.glow ? hsl(body.hue + 28, 0.65, 0.68) : hsl(body.hue + 20, 0.38, 0.78);
   const inkCol = rgb(theme.palette.ink);
   const seed = (body.hue % 97) / 9;
   const center = useDerivedValue(() => {
@@ -235,7 +232,15 @@ interface HoleProps extends NodeProps {
   imageRect: SharedValue<{ x: number; y: number; width: number; height: number }>;
 }
 
-const BlackHoleNode = memo(function BlackHoleNode({ body, index, world, clock, theme, backdrop, imageRect }: HoleProps) {
+const BlackHoleNode = memo(function BlackHoleNode({
+  body,
+  index,
+  world,
+  clock,
+  theme,
+  backdrop,
+  imageRect,
+}: HoleProps) {
   const reach = body.r * 5;
   const center = useDerivedValue(() => {
     const b = world.value.bodies[index] ?? body;
@@ -264,7 +269,8 @@ const BlackHoleNode = memo(function BlackHoleNode({ body, index, world, clock, t
 });
 
 export function SkyCanvas(props: SkyCanvasProps) {
-  const { sim, world, camera, width, height, theme, preview, edges, head, trail, aurora, tilt } = props;
+  const { sim, world, camera, width, height, theme, preview, edges, head, trail, aurora, tilt } =
+    props;
   const backdrop = useBackdrop(props);
   const gravity = useAnimatedSensor(SensorType.GRAVITY, { interval: 32 });
   const extra = props.extraComets;
@@ -301,7 +307,9 @@ export function SkyCanvas(props: SkyCanvasProps) {
 
   const picture = useDerivedValue(() => {
     const recorder = Skia.PictureRecorder();
-    const canvas = recorder.beginRecording(Skia.XYWHRect(-700, -700, WORLD_W + 1400, WORLD_H + 1400));
+    const canvas = recorder.beginRecording(
+      Skia.XYWHRect(-700, -700, WORLD_W + 1400, WORLD_H + 1400),
+    );
     const f = sim.flight.value;
     const flying = f !== null && sim.phase.value !== 0;
     const w = sim.world.value;
@@ -352,9 +360,25 @@ export function SkyCanvas(props: SkyCanvasProps) {
       <Group transform={transform}>
         {world.bodies.map((b, i) =>
           b.kind === 'planet' ? (
-            <PlanetNode key={`${i}-${b.kind}-${b.r}`} body={b} index={i} world={sim.world} time={sim.displayTime} clock={sim.clock} theme={theme} />
+            <PlanetNode
+              key={`${i}-${b.kind}-${b.r}`}
+              body={b}
+              index={i}
+              world={sim.world}
+              time={sim.displayTime}
+              clock={sim.clock}
+              theme={theme}
+            />
           ) : b.kind === 'repulsor' ? (
-            <RepulsorNode key={`${i}-${b.kind}-${b.r}`} body={b} index={i} world={sim.world} time={sim.displayTime} clock={sim.clock} theme={theme} />
+            <RepulsorNode
+              key={`${i}-${b.kind}-${b.r}`}
+              body={b}
+              index={i}
+              world={sim.world}
+              time={sim.displayTime}
+              clock={sim.clock}
+              theme={theme}
+            />
           ) : (
             <BlackHoleNode
               key={`${i}-${b.kind}-${b.r}`}

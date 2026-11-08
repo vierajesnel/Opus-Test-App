@@ -24,13 +24,20 @@ export function LevelScreen({ id }: { id: string }) {
   const firstEver = useMemo(() => !appStore.get().save.flags.onboarded && id === '1-1', [id]);
 
   if (!level) {
-    return <EmptyState title="This sky has drifted off" body="It isn’t on any chart I keep." onBack={nav.back} />;
+    return (
+      <EmptyState
+        title="This sky has drifted off"
+        body="It isn’t on any chart I keep."
+        onBack={nav.back}
+      />
+    );
   }
 
   const next = nextLevelAfter(id);
   const goNext = () => {
     const save = appStore.get().save;
-    if (next && levelUnlocked(save, next.chapter, next.index)) nav.replace({ name: 'level', id: next.id });
+    if (next && levelUnlocked(save, next.chapter, next.index))
+      nav.replace({ name: 'level', id: next.id });
     else nav.replace({ name: 'voyage', chapter: level.chapter });
   };
 

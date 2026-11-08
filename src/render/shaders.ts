@@ -118,7 +118,7 @@ half4 main(float2 p) {
   if (ink > 0.5) {
     float hatch = step(0.5, fract((q.x + q.y) * 9.0));
     float shade = smoothstep(0.55, 0.1, diff);
-    half3 paper = mix(half3(0.97, 0.93, 0.85), surface, 0.35);
+    half3 paper = mix(half3(0.97, 0.93, 0.85), surface, 0.6);
     half3 col = mix(paper, inkCol, hatch * shade * 0.8);
     col = mix(col, inkCol, smoothstep(0.86, 0.94, r2));
     return half4(col * edge, edge);

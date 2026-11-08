@@ -46,7 +46,10 @@ function renderRoute(route: Route) {
 /** Keeps the audio mix, system chrome and app lifecycle in sync with settings. */
 function Conductor() {
   const { theme } = useAmbience();
-  const mix = useSave((s) => s.settings, (a, b) => a.music === b.music && a.sfx === b.sfx && a.muted === b.muted);
+  const mix = useSave(
+    (s) => s.settings,
+    (a, b) => a.music === b.music && a.sfx === b.sfx && a.muted === b.muted,
+  );
 
   useEffect(() => {
     audio().configure({ music: mix.music, sfx: mix.sfx, muted: mix.muted });

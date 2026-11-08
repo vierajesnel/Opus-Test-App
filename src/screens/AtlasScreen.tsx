@@ -19,7 +19,10 @@ import { Text } from '../ui/Text';
 import { useAmbience } from '../ui/ThemeProvider';
 import { radius, space } from '../ui/theme';
 
-const ENTRIES = LEVELS.map((level) => ({ level, ...nameConstellation(level.world.stars, level.seed) }));
+const ENTRIES = LEVELS.map((level) => ({
+  level,
+  ...nameConstellation(level.world.stars, level.seed),
+}));
 
 export function AtlasScreen() {
   const nav = useNav();
@@ -30,12 +33,18 @@ export function AtlasScreen() {
   const [open, setOpen] = useState<number | null>(null);
   const found = useMemo(() => ENTRIES.filter((e) => records[e.level.id]).length, [records]);
   const columns = width >= 700 ? 4 : width >= 340 ? 3 : 2;
-  const card = Math.floor((Math.min(width, 640) - space.lg * 2 - space.md * (columns - 1)) / columns);
+  const card = Math.floor(
+    (Math.min(width, 640) - space.lg * 2 - space.md * (columns - 1)) / columns,
+  );
   const selected = open === null ? null : ENTRIES[open];
 
   return (
     <>
-      <Screen title="Star Atlas" subtitle={`${found} of ${ENTRIES.length} constellations charted`} onBack={nav.back}>
+      <Screen
+        title="Star Atlas"
+        subtitle={`${found} of ${ENTRIES.length} constellations charted`}
+        onBack={nav.back}
+      >
         {found === 0 && (
           <Panel>
             <Text variant="body" tone="muted" align="center" style={styles.italic}>
@@ -58,16 +67,36 @@ export function AtlasScreen() {
                       disabled={!rec}
                       onPress={() => setOpen(index)}
                       accessibilityRole="button"
-                      accessibilityLabel={rec ? `${entry.name}, from sky ${entry.level.id}` : `Uncharted, sky ${entry.level.id}`}
+                      accessibilityLabel={
+                        rec
+                          ? `${entry.name}, from sky ${entry.level.id}`
+                          : `Uncharted, sky ${entry.level.id}`
+                      }
                       accessibilityState={{ disabled: !rec }}
                       style={[
                         styles.card,
-                        { width: card, backgroundColor: theme.palette.surface, borderColor: theme.palette.border },
+                        {
+                          width: card,
+                          backgroundColor: theme.palette.surface,
+                          borderColor: theme.palette.border,
+                        },
                       ]}
                     >
-                      <ConstellationGlyph stars={entry.level.world.stars} edges={entry.edges} size={card - space.lg} dim={!rec} />
-                      <Text variant="caption" align="center" numberOfLines={2} tone={rec ? 'text' : 'faint'}>
-                        {rec ? entry.name.replace(/^The /, '') : `Sky ${entry.level.id} · uncharted`}
+                      <ConstellationGlyph
+                        stars={entry.level.world.stars}
+                        edges={entry.edges}
+                        size={card - space.lg}
+                        dim={!rec}
+                      />
+                      <Text
+                        variant="caption"
+                        align="center"
+                        numberOfLines={2}
+                        tone={rec ? 'text' : 'faint'}
+                      >
+                        {rec
+                          ? entry.name.replace(/^The /, '')
+                          : `Sky ${entry.level.id} · uncharted`}
                       </Text>
                     </Pressable>
                   </Animated.View>
@@ -79,11 +108,21 @@ export function AtlasScreen() {
       </Screen>
       {selected && (
         <Scrim>
-          <Animated.View entering={FadeInDown.duration(320)} style={styles.detailWrap} accessibilityViewIsModal>
-            <ScrollView contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+          <Animated.View
+            entering={FadeInDown.duration(320)}
+            style={styles.detailWrap}
+            accessibilityViewIsModal
+          >
+            <ScrollView
+              contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+            >
               <Panel style={styles.detail}>
                 <View style={styles.center}>
-                  <ConstellationGlyph stars={selected.level.world.stars} edges={selected.edges} size={200} />
+                  <ConstellationGlyph
+                    stars={selected.level.world.stars}
+                    edges={selected.edges}
+                    size={200}
+                  />
                 </View>
                 <Text variant="label" caps tone="accent" align="center">
                   Sky {selected.level.id} · {CHAPTERS[selected.level.chapter].title}
@@ -96,7 +135,9 @@ export function AtlasScreen() {
                 </Text>
                 {records[selected.level.id] && (
                   <View style={styles.center}>
-                    <Embers count={embers(records[selected.level.id].best, PARS[selected.level.id])} />
+                    <Embers
+                      count={embers(records[selected.level.id].best, PARS[selected.level.id])}
+                    />
                     <Text variant="caption" tone="muted">
                       Best {records[selected.level.id].best} · par {selected.level.par}
                       {records[selected.level.id].grace ? ' · Grace' : ''}

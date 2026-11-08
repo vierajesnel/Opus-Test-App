@@ -8,12 +8,7 @@ import { newlyUnlocked } from '../content/achievements';
 import { SAVE_NOTICES } from '../content/copy';
 import { PARS } from '../content/levels';
 import { createSaver, loadSave, type LoadOutcome } from './persistence';
-import {
-  accumulateFlight,
-  recordCompletion,
-  recordDaily,
-  type FlightReport,
-} from './progress';
+import { accumulateFlight, recordCompletion, recordDaily, type FlightReport } from './progress';
 import { defaultSave, type OrreryLayout, type SaveData, type Settings } from './schema';
 import { createStore, useStore } from './store';
 
@@ -62,7 +57,10 @@ export function flushSave(): Promise<void> {
   return saver.flush();
 }
 
-function update(fn: (save: SaveData) => SaveData, context: { flight?: FlightReport; orreryAloft?: number } = {}) {
+function update(
+  fn: (save: SaveData) => SaveData,
+  context: { flight?: FlightReport; orreryAloft?: number } = {},
+) {
   appStore.set((s) => {
     let save = fn(s.save);
     const unlocked = newlyUnlocked({
@@ -91,16 +89,10 @@ export function setSetting<K extends keyof Settings>(key: K, value: Settings[K])
 }
 
 /** Records a finished fling (any mode except the Orrery). */
-export function reportFlight(report: FlightReport, starsWoken: number, levelId: string | null) {
-  update(
-    (save) => {
-      const next = { ...save, stats: accumulateFlight(save.stats, report, starsWoken) };
-      const rec = levelId ? save.levels[levelId] : undefined;
-      if (levelId && rec) next.levels = { ...save.levels, [levelId]: { ...rec, flings: rec.flings + 1 } };
-      return next;
-    },
-    { flight: report },
-  );
+export function reportFlight(report: FlightReport, starsWoken: number) {
+  update((save) => ({ ...save, stats: accumulateFlight(save.stats, report, starsWoken) }), {
+    flight: report,
+  });
 }
 
 export function reportCompletion(levelId: string, flings: number) {

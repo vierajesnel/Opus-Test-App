@@ -271,6 +271,8 @@ export function CompleteSheet(p: CompleteProps) {
 interface AimPadProps {
   /** Docked in a right-hand column (landscape). */
   side: boolean;
+  /** False while a comet is already in flight. */
+  canFling: boolean;
   angleDeg: number;
   power: number;
   readout: string;
@@ -283,6 +285,7 @@ interface AimPadProps {
 /** Button aiming for screen-reader users and anyone who prefers precision to dragging. */
 export function AimPad({
   side,
+  canFling,
   angleDeg,
   power,
   readout,
@@ -292,7 +295,10 @@ export function AimPad({
   onFling,
 }: AimPadProps) {
   return (
-    <Animated.View entering={FadeInUp.duration(260)} style={[side ? styles.aimPadSide : styles.aimPad, { bottom }]}>
+    <Animated.View
+      entering={FadeInUp.duration(260)}
+      style={[side ? styles.aimPadSide : styles.aimPad, { bottom }]}
+    >
       <Panel style={styles.aimPanel}>
         <Text variant="caption" tone="muted" align="center" accessibilityLiveRegion="polite">
           {readout}
@@ -330,7 +336,14 @@ export function AimPad({
             <Text variant="numeral">{Math.round(power * 100)}%</Text>
           </View>
           <IconButton icon="plus" label="More power" onPress={() => onPower(0.05)} />
-          <Button kind="primary" icon="fling" label="Fling" onPress={onFling} compact />
+          <Button
+            kind="primary"
+            icon="fling"
+            label={canFling ? 'Fling' : 'In flight…'}
+            onPress={onFling}
+            disabled={!canFling}
+            compact
+          />
         </View>
       </Panel>
     </Animated.View>

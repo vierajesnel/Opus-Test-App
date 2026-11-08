@@ -135,9 +135,6 @@ export function createDirector(
     setActive(active: boolean) {
       backend.setActive(active);
     },
-
-    /** Sounds still waiting to be synthesised (for the loading shimmer). */
-    pendingCount: () => queue.length + (pumping ? 1 : 0),
   };
 }
 

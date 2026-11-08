@@ -25,11 +25,24 @@ export function Screen({ title, subtitle, onBack, children, hue = 230, right }: 
   const { width, height } = useWindowDimensions();
   return (
     <View style={[styles.root, { backgroundColor: theme.palette.bg }]}>
-      <AmbientSky width={width} height={height} theme={theme} hue={hue} focusX={0.86} focusY={0.06} intensity={0.4} animate={!reducedMotion} />
+      <AmbientSky
+        width={width}
+        height={height}
+        theme={theme}
+        hue={hue}
+        focusX={0.86}
+        focusY={0.06}
+        intensity={0.4}
+        animate={!reducedMotion}
+      />
       <View
         style={[
           styles.header,
-          { paddingTop: insets.top + space.sm, paddingLeft: insets.left + space.md, paddingRight: insets.right + space.md },
+          {
+            paddingTop: insets.top + space.sm,
+            paddingLeft: insets.left + space.md,
+            paddingRight: insets.right + space.md,
+          },
         ]}
       >
         <IconButton icon="back" label="Back" onPress={onBack} />
@@ -48,7 +61,11 @@ export function Screen({ title, subtitle, onBack, children, hue = 230, right }: 
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + space.huge, paddingLeft: insets.left + space.lg, paddingRight: insets.right + space.lg },
+          {
+            paddingBottom: insets.bottom + space.huge,
+            paddingLeft: insets.left + space.lg,
+            paddingRight: insets.right + space.lg,
+          },
         ]}
       >
         <View style={styles.column}>{children}</View>

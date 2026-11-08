@@ -36,7 +36,7 @@ function CometPicker() {
         const requirement = SKIN_UNLOCKS[skin];
         const hint = open
           ? look.blurb
-          : `Locked. ${ACHIEVEMENTS.find((a) => a.id === requirement)?.secret ? 'A secret.' : ACHIEVEMENTS.find((a) => a.id === requirement)?.blurb ?? ''}`;
+          : `Locked. ${ACHIEVEMENTS.find((a) => a.id === requirement)?.secret ? 'A secret.' : (ACHIEVEMENTS.find((a) => a.id === requirement)?.blurb ?? '')}`;
         return (
           <Pressable
             key={skin}
@@ -46,7 +46,10 @@ function CometPicker() {
             accessibilityLabel={look.name}
             accessibilityHint={hint}
             accessibilityState={{ selected, disabled: !open }}
-            style={[styles.skin, { borderColor: selected ? p.accent : p.border, opacity: open ? 1 : 0.5 }]}
+            style={[
+              styles.skin,
+              { borderColor: selected ? p.accent : p.border, opacity: open ? 1 : 0.5 },
+            ]}
           >
             <View
               style={[
@@ -75,13 +78,28 @@ export function SettingsList({ inGame = false }: { inGame?: boolean }) {
   return (
     <View style={styles.list}>
       <Section title="Sound">
-        <ToggleRow label="Mute everything" detail="Also follows your phone’s silent switch." value={s.muted} onChange={(v) => setSetting('muted', v)} />
+        <ToggleRow
+          label="Mute everything"
+          detail="Also follows your phone’s silent switch."
+          value={s.muted}
+          onChange={(v) => setSetting('muted', v)}
+        />
         <SliderRow label="Music" value={s.music} onChange={(v) => setSetting('music', v)} />
         <SliderRow label="Sound effects" value={s.sfx} onChange={(v) => setSetting('sfx', v)} />
       </Section>
       <Section title="Feel">
-        <ToggleRow label="Haptics" detail="Feel the pull of the sling and the snap of a waking star." value={s.haptics} onChange={(v) => setSetting('haptics', v)} />
-        <ToggleRow label="Tilt parallax" detail="Lean your phone; the far sky leans back." value={s.tilt} onChange={(v) => setSetting('tilt', v)} />
+        <ToggleRow
+          label="Haptics"
+          detail="Feel the pull of the sling and the snap of a waking star."
+          value={s.haptics}
+          onChange={(v) => setSetting('haptics', v)}
+        />
+        <ToggleRow
+          label="Tilt parallax"
+          detail="Lean your phone; the far sky leans back."
+          value={s.tilt}
+          onChange={(v) => setSetting('tilt', v)}
+        />
       </Section>
       <Section title="Look">
         <SegmentedRow
@@ -147,7 +165,12 @@ export function SettingsList({ inGame = false }: { inGame?: boolean }) {
                 Forget every sky, streak and achievement? Settings stay. This can’t be undone.
               </Text>
               <View style={styles.confirmRow}>
-                <Button style={styles.flex} label="Keep it" onPress={() => setConfirming(false)} compact />
+                <Button
+                  style={styles.flex}
+                  label="Keep it"
+                  onPress={() => setConfirming(false)}
+                  compact
+                />
                 <Button
                   style={styles.flex}
                   kind="primary"

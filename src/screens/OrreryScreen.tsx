@@ -27,7 +27,14 @@ import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import { audio } from '../audio';
 import { MAX_SPEED, MIN_POWER, MIN_SPEED, SOFTENING, WORLD_H, WORLD_W } from '../engine/constants';
 import { createFlightAt } from '../engine/physics';
-import { EventType, FlightStatus, type Body, type Flight, type FlightEvent, type World } from '../engine/types';
+import {
+  EventType,
+  FlightStatus,
+  type Body,
+  type Flight,
+  type FlightEvent,
+  type World,
+} from '../engine/types';
 import { fitCamera, toWorld } from '../game/camera';
 import {
   decodeLayout,
@@ -70,14 +77,29 @@ const TOOLS: { tool: Tool; label: string; a11y: string }[] = [
   { tool: 'repulsor', label: 'Pusher', a11y: 'Repulsor: tap to place' },
   { tool: 'erase', label: 'Erase', a11y: 'Erase: tap a body to remove it' },
 ];
-const TOOL_CODE: Record<Tool, number> = { fling: 0, small: 1, medium: 2, large: 3, blackhole: 4, repulsor: 5, erase: 6 };
+const TOOL_CODE: Record<Tool, number> = {
+  fling: 0,
+  small: 1,
+  medium: 2,
+  large: 3,
+  blackhole: 4,
+  repulsor: 5,
+  erase: 6,
+};
 const ROOTS = [57, 60, 62, 64, 65, 67];
 
 function ToolGlyph({ tool, color }: { tool: Tool; color: string }) {
   const common = { stroke: color, strokeWidth: 1.8, fill: 'none' } as const;
   return (
     <Svg width={26} height={26} viewBox="0 0 24 24">
-      {tool === 'fling' && <Path d="M5 19l9-9M14 10l-1.5-4.5L19 5l-.5 6.5z" {...common} strokeLinecap="round" strokeLinejoin="round" />}
+      {tool === 'fling' && (
+        <Path
+          d="M5 19l9-9M14 10l-1.5-4.5L19 5l-.5 6.5z"
+          {...common}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
       {tool === 'small' && <Circle cx={12} cy={12} r={4} {...common} fill={color} />}
       {tool === 'medium' && <Circle cx={12} cy={12} r={6.5} {...common} fill={color} />}
       {tool === 'large' && <Circle cx={12} cy={12} r={9} {...common} fill={color} />}
@@ -90,10 +112,21 @@ function ToolGlyph({ tool, color }: { tool: Tool; color: string }) {
       {tool === 'repulsor' && (
         <>
           <Circle cx={12} cy={12} r={4} {...common} />
-          <Path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" {...common} strokeLinecap="round" />
+          <Path
+            d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"
+            {...common}
+            strokeLinecap="round"
+          />
         </>
       )}
-      {tool === 'erase' && <Path d="M5 7h14M9.5 7V4.5h5V7M7 7l1 12.5h8L17 7" {...common} strokeLinecap="round" strokeLinejoin="round" />}
+      {tool === 'erase' && (
+        <Path
+          d="M5 7h14M9.5 7V4.5h5V7M7 7l1 12.5h8L17 7"
+          {...common}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
     </Svg>
   );
 }
@@ -121,7 +154,11 @@ export function OrreryScreen() {
     () => ({ launchX: WORLD_W / 2, launchY: WORLD_H / 2, bodies, stars: [], wormholes: [] }),
     [bodies],
   );
-  const sim = useSkySim(world, { onLaunch: () => undefined, onEvents: () => undefined, onEnd: () => undefined }, reducedMotion);
+  const sim = useSkySim(
+    world,
+    { onLaunch: () => undefined, onEvents: () => undefined, onEnd: () => undefined },
+    reducedMotion,
+  );
   const comets = useSharedValue<Flight[]>([]);
   const trails = useSharedValue<number[][]>([]);
   const heads = useSharedValue<number[]>([]);
@@ -151,7 +188,11 @@ export function OrreryScreen() {
 
   useEffect(() => {
     const director = audio();
-    director.prepareSky(key, bodies.filter((b) => b.note >= 0).map((b) => b.note), 0);
+    director.prepareSky(
+      key,
+      bodies.filter((b) => b.note >= 0).map((b) => b.note),
+      0,
+    );
     director.playMusic(key);
   }, [key, bodies]);
 
@@ -200,7 +241,13 @@ export function OrreryScreen() {
 
   const scatter = useCallback(() => {
     setBodies((bs) =>
-      tune(bs.map((b) => ({ ...b, x: Math.max(60, Math.min(WORLD_W - 60, b.x + (Math.random() - 0.5) * 220)), y: Math.max(60, Math.min(WORLD_H - 60, b.y + (Math.random() - 0.5) * 220)) }))),
+      tune(
+        bs.map((b) => ({
+          ...b,
+          x: Math.max(60, Math.min(WORLD_W - 60, b.x + (Math.random() - 0.5) * 220)),
+          y: Math.max(60, Math.min(WORLD_H - 60, b.y + (Math.random() - 0.5) * 220)),
+        })),
+      ),
     );
     setMessage('You’ve upset the cosmos. It’ll settle. Probably.');
     haptic.crash();
@@ -215,7 +262,14 @@ export function OrreryScreen() {
       shakeCooldown.set(2);
       scheduleOnRN(scatter);
     }
-    const out = advanceOrrery(flock, sim.world.get(), dt, sim.singAt.get(), sim.particles.get(), sim.clock.get());
+    const out = advanceOrrery(
+      flock,
+      sim.world.get(),
+      dt,
+      sim.singAt.get(),
+      sim.particles.get(),
+      sim.clock.get(),
+    );
     if (out) scheduleOnRN(onCometEvents, out.events, out.count);
   });
 
@@ -250,7 +304,9 @@ export function OrreryScreen() {
     setBodies((bs) => tune(bs.filter((_, i) => i !== index)));
   }, []);
   const commitMove = useCallback((index: number, x: number, y: number) => {
-    setBodies((bs) => bs.map((b, i) => (i === index ? { ...b, x: Math.round(x), y: Math.round(y) } : b)));
+    setBodies((bs) =>
+      bs.map((b, i) => (i === index ? { ...b, x: Math.round(x), y: Math.round(y) } : b)),
+    );
   }, []);
 
   const pan = usePanGesture({
@@ -300,7 +356,17 @@ export function OrreryScreen() {
         const w = sim.world.get();
         const f = createFlightAt(w, w.launchX, w.launchY, { angle: sim.aimAngle.get(), power }, 0);
         const count = addComet(flock, f, MAX_COMETS);
-        emit(sim.particles.get(), f.x, f.y, 12, 220, PARTICLE.comet, 0.6, sim.aimAngle.get() + Math.PI, 1.6);
+        emit(
+          sim.particles.get(),
+          f.x,
+          f.y,
+          12,
+          220,
+          PARTICLE.comet,
+          0.6,
+          sim.aimAngle.get() + Math.PI,
+          1.6,
+        );
         scheduleOnRN(onLaunched, count);
       } else if (dragIndex.get() >= 0) {
         const b = sim.world.get().bodies[dragIndex.get()];
@@ -421,7 +487,17 @@ export function OrreryScreen() {
         </View>
       </GestureDetector>
 
-      <View style={[styles.top, { paddingTop: insets.top + space.sm, paddingLeft: insets.left + space.md, paddingRight: insets.right + space.md }]} pointerEvents="box-none">
+      <View
+        style={[
+          styles.top,
+          {
+            paddingTop: insets.top + space.sm,
+            paddingLeft: insets.left + space.md,
+            paddingRight: insets.right + space.md,
+          },
+        ]}
+        pointerEvents="box-none"
+      >
         <IconButton icon="back" label="Back" onPress={nav.back} />
         <View style={styles.topCenter} pointerEvents="none">
           <Text variant="label" caps tone="muted">
@@ -437,7 +513,13 @@ export function OrreryScreen() {
       <Bubble text={message} bottom={toolbar + space.sm} />
 
       <View style={[styles.toolbar, { paddingBottom: insets.bottom + space.sm }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tools} accessibilityRole="radiogroup" accessibilityLabel="Tools">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tools}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Tools"
+        >
           {TOOLS.map(({ tool: t, label, a11y }) => {
             const active = t === tool;
             const fg = active ? theme.palette.accentText : theme.palette.text;
@@ -460,7 +542,11 @@ export function OrreryScreen() {
                 ]}
               >
                 <ToolGlyph tool={t} color={fg} />
-                <Text variant="caption" style={{ color: fg, fontWeight: active ? '700' : '500' }} maxFontSizeMultiplier={1.3}>
+                <Text
+                  variant="caption"
+                  style={{ color: fg, fontWeight: active ? '700' : '500' }}
+                  maxFontSizeMultiplier={1.3}
+                >
                   {label}
                 </Text>
               </Pressable>
@@ -486,12 +572,27 @@ export function OrreryScreen() {
                 <SegmentedRow
                   label="Key"
                   value={`${key.root}`}
-                  options={ROOTS.map((r) => ({ value: `${r}`, label: noteName(r).replace(/\d/, '') }))}
+                  options={ROOTS.map((r) => ({
+                    value: `${r}`,
+                    label: noteName(r).replace(/\d/, ''),
+                  }))}
                   onChange={(root) => setKey((k) => ({ ...k, root: Number(root) }))}
                 />
                 <View style={styles.row}>
-                  <Button style={styles.flex} icon="orrery" label="Gift an orbit" onPress={giftOrbit} compact />
-                  <Button style={styles.flex} icon="restart" label="Clear comets" onPress={clearComets} compact />
+                  <Button
+                    style={styles.flex}
+                    icon="orrery"
+                    label="Gift an orbit"
+                    onPress={giftOrbit}
+                    compact
+                  />
+                  <Button
+                    style={styles.flex}
+                    icon="restart"
+                    label="Clear comets"
+                    onPress={clearComets}
+                    compact
+                  />
                 </View>
                 <Button
                   icon="trash"
@@ -511,7 +612,8 @@ export function OrreryScreen() {
                       <Text variant="bodySmall">{slot ? slot.name : 'Empty slot'}</Text>
                       {slot && (
                         <Text variant="caption" tone="muted">
-                          {slot.bodies.length} bodies · {noteName(slot.key.root).replace(/\d/, '')} {slot.key.mode}
+                          {slot.bodies.length} bodies · {noteName(slot.key.root).replace(/\d/, '')}{' '}
+                          {slot.key.mode}
                         </Text>
                       )}
                     </View>
@@ -545,8 +647,20 @@ export function OrreryScreen() {
                   Share
                 </Text>
                 <View style={styles.row}>
-                  <Button style={styles.flex} icon="copy" label="Copy code" onPress={copyCode} compact />
-                  <Button style={styles.flex} icon="share" label="Paste code" onPress={pasteCode} compact />
+                  <Button
+                    style={styles.flex}
+                    icon="copy"
+                    label="Copy code"
+                    onPress={copyCode}
+                    compact
+                  />
+                  <Button
+                    style={styles.flex}
+                    icon="share"
+                    label="Paste code"
+                    onPress={pasteCode}
+                    compact
+                  />
                 </View>
                 {shareNote && (
                   <Text variant="caption" tone="muted" accessibilityLiveRegion="polite">
@@ -565,10 +679,24 @@ export function OrreryScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  top: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  top: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+  },
   topCenter: { flex: 1, alignItems: 'center' },
   toolbar: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  tools: { gap: space.sm, paddingHorizontal: space.md, paddingTop: space.sm, flexGrow: 1, justifyContent: 'center' },
+  tools: {
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingTop: space.sm,
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
   chip: {
     minWidth: 64,
     minHeight: 64,
@@ -584,5 +712,11 @@ const styles = StyleSheet.create({
   menu: { gap: space.md },
   row: { flexDirection: 'row', gap: space.sm },
   flex: { flex: 1 },
-  slot: { flexDirection: 'row', alignItems: 'center', gap: space.sm, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: space.sm },
+  slot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: space.sm,
+  },
 });

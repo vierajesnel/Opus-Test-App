@@ -1,4 +1,11 @@
-import { BlendMode, Canvas, Picture, Skia, PaintStyle, StrokeCap } from '@shopify/react-native-skia';
+import {
+  BlendMode,
+  Canvas,
+  Picture,
+  Skia,
+  PaintStyle,
+  StrokeCap,
+} from '@shopify/react-native-skia';
 import Constants from 'expo-constants';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
@@ -24,7 +31,13 @@ const RESET_AFTER = 1600;
 function IntegratorDemo({ width }: { width: number }) {
   const { theme, reducedMotion } = useAmbience();
   const height = Math.min(220, width * 0.6);
-  const state = useSharedValue({ e: [R0, 0, 0, 1], v: [R0, 0, 0, 1], steps: 0, trailE: [] as number[], trailV: [] as number[] });
+  const state = useSharedValue({
+    e: [R0, 0, 0, 1],
+    v: [R0, 0, 0, 1],
+    steps: 0,
+    trailE: [] as number[],
+    trailV: [] as number[],
+  });
   useFrameCallback(() => {
     'worklet';
     const s = { ...state.value };
@@ -39,7 +52,12 @@ function IntegratorDemo({ width }: { width: number }) {
       const nx = vx + vvx * H + 0.5 * ax * H * H;
       const ny = vy + vvy * H + 0.5 * ay * H * H;
       const nr3 = Math.pow(nx * nx + ny * ny, 1.5);
-      s.v = [nx, ny, vvx + 0.5 * (ax - (MU * nx) / nr3) * H, vvy + 0.5 * (ay - (MU * ny) / nr3) * H];
+      s.v = [
+        nx,
+        ny,
+        vvx + 0.5 * (ax - (MU * nx) / nr3) * H,
+        vvy + 0.5 * (ay - (MU * ny) / nr3) * H,
+      ];
       s.steps++;
     }
     // Fresh arrays each frame: values that crossed from JS may be frozen.
@@ -73,7 +91,13 @@ function IntegratorDemo({ width }: { width: number }) {
       for (let i = 2; i < pts.length; i += 2) {
         p.setStrokeWidth(2);
         p.setColor(Float32Array.of(c[0], c[1], c[2], (i / pts.length) * 0.9));
-        canvas.drawLine(cx + pts[i - 2] * scale, cy + pts[i - 1] * scale, cx + pts[i] * scale, cy + pts[i + 1] * scale, p);
+        canvas.drawLine(
+          cx + pts[i - 2] * scale,
+          cy + pts[i - 1] * scale,
+          cx + pts[i] * scale,
+          cy + pts[i + 1] * scale,
+          p,
+        );
       }
     };
     trail(s.trailE, cxE, cE);
@@ -91,7 +115,10 @@ function IntegratorDemo({ width }: { width: number }) {
   });
 
   return (
-    <View accessible accessibilityLabel="Animation: on the left, a comet integrated with Euler's method spirals outward. On the right, velocity Verlet keeps the same orbit closed.">
+    <View
+      accessible
+      accessibilityLabel="Animation: on the left, a comet integrated with Euler's method spirals outward. On the right, velocity Verlet keeps the same orbit closed."
+    >
       <Canvas style={{ width, height }}>
         <Picture picture={picture} />
       </Canvas>
@@ -110,33 +137,27 @@ function IntegratorDemo({ width }: { width: number }) {
 const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'Physics on the UI thread',
-    body:
-      'Each fling is a softened n-body simulation stepped at a fixed 240 Hz with velocity Verlet, a symplectic integrator that conserves orbits instead of leaking energy. It runs as Reanimated worklets on the UI thread, so aiming and flight stay smooth even when JavaScript is busy. A static test checks every engine function is worklet-safe.',
+    body: 'Each fling is a softened n-body simulation stepped at a fixed 240 Hz with velocity Verlet, a symplectic integrator that conserves orbits instead of leaking energy. It runs as Reanimated worklets on the UI thread, so aiming and flight stay smooth even when JavaScript is busy. A static test checks every engine function is worklet-safe.',
   },
   {
     title: 'Skies solvable by construction',
-    body:
-      'The generator lays out gravity, flies a comet through it, then hangs stars along the parts of the path that only exist because gravity bent it. Every solution must survive nearby launches too, so it is findable by a thumb. A solver then maps launch space (angle × power) to measure difficulty and set par. All 48 Voyage skies are generated and re-verified at build time; the Daily Sky is generated on your phone.',
+    body: 'The generator lays out gravity, flies a comet through it, then hangs stars along the parts of the path that only exist because gravity bent it. Every solution must survive nearby launches too, so it is findable by a thumb. A solver then maps launch space (angle × power) to measure difficulty and set par. All 48 Voyage skies are generated and re-verified at build time; the Daily Sky is generated on your phone.',
   },
   {
     title: 'Every sound is synthesised',
-    body:
-      'There are no recordings. Planets ring with two-operator FM bells, stars with the inharmonic modes of a struck bar, and the ambience is a seamless loop where every partial completes a whole number of cycles. Clips are rendered in JavaScript, encoded to WAV, and cached. Each sky has a key and a mode, so whatever you hit stays in tune.',
+    body: 'There are no recordings. Planets ring with two-operator FM bells, stars with the inharmonic modes of a struck bar, and the ambience is a seamless loop where every partial completes a whole number of cycles. Clips are rendered in JavaScript, encoded to WAV, and cached. Each sky has a key and a mode, so whatever you hit stays in tune.',
   },
   {
     title: 'Constellations from geometry',
-    body:
-      'Finished skies are joined by a minimum spanning tree, as sky-figures tend to be. Principal-component analysis tells long figures (rivers, herons) from broad ones (whales, owls), and a small grammar seeded by the sky writes the myth.',
+    body: 'Finished skies are joined by a minimum spanning tree, as sky-figures tend to be. Principal-component analysis tells long figures (rivers, herons) from broad ones (whales, owls), and a small grammar seeded by the sky writes the myth.',
   },
   {
     title: 'Two skies, one scene',
-    body:
-      'Midnight and Almanac share every shader, each with a glow mode and an ink mode. Black holes lens the backdrop in both: nebulae bend in one, the chart’s grid lines bend in the other.',
+    body: 'Midnight and Almanac share every shader, each with a glow mode and an ink mode. Black holes lens the backdrop in both: nebulae bend in one, the chart’s grid lines bend in the other.',
   },
   {
     title: 'Built to last',
-    body:
-      'Saves are versioned and checksummed, with a backup slot, migrations, and a field-by-field repair step, so a damaged file loses as little as possible. Screen-reader users get an aim pad that says where a shot will go. Reduced motion, dynamic type and contrast-tested colours are included.',
+    body: 'Saves are versioned and checksummed, with a backup slot, migrations, and a field-by-field repair step, so a damaged file loses as little as possible. Screen-reader users get an aim pad that says where a shot will go. Reduced motion, dynamic type and contrast-tested colours are included.',
   },
 ];
 
@@ -151,12 +172,14 @@ export function AboutScreen() {
           The quiet sky
         </Text>
         <Text variant="body" tone="muted">
-          One night, the stars simply stopped. Not out — asleep. Only the Lamplighter stayed lit: the last star on watch,
-          a little theatrical after a billion years of talking to no one. Then you arrived, a small comet with more
-          enthusiasm than sense, and the Lamplighter had an idea.
+          One night, the stars simply stopped. Not out — asleep. Only the Lamplighter stayed lit:
+          the last star on watch, a little theatrical after a billion years of talking to no one.
+          Then you arrived, a small comet with more enthusiasm than sense, and the Lamplighter had
+          an idea.
         </Text>
         <Text variant="body" tone="muted">
-          Every planet hums a note. Every orbit you trace is a melody. Wake the stars, and the sky starts singing again.
+          Every planet hums a note. Every orbit you trace is a melody. Wake the stars, and the sky
+          starts singing again.
         </Text>
       </Panel>
       <Panel style={styles.panel}>
@@ -177,8 +200,8 @@ export function AboutScreen() {
       </Panel>
       <Panel style={styles.panel}>
         <Text variant="bodySmall" tone="muted" align="center">
-          Designed, written, composed and engineered by Claude, an AI model made by Anthropic. Every pixel and every
-          note is generated by code: no art packs, no samples, no servers.
+          Designed, written, composed and engineered by Claude, an AI model made by Anthropic. Every
+          pixel and every note is generated by code: no art packs, no samples, no servers.
         </Text>
         <Text variant="caption" tone="faint" align="center">
           Starwake {Constants.expoConfig?.version ?? ''} · works offline, always

@@ -156,5 +156,5 @@ export function slotParams(chapter: number, slot: number): SlotParams {
 
 /** Where on the chapter's difficulty ramp a slot should land (0..1). */
 export function slotTargetDifficulty(chapter: number, slot: number): number {
-  return lerp(0.12, 0.9, (chapter + slot / (LEVELS_PER_CHAPTER - 1) * 0.85) / CHAPTERS.length);
+  return lerp(0.12, 0.9, (chapter + (slot / (LEVELS_PER_CHAPTER - 1)) * 0.85) / CHAPTERS.length);
 }

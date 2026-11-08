@@ -93,7 +93,8 @@ export const LOADING_LINES = [
 
 /** Time-of-day greetings for the title screen. */
 export function greeting(hour: number): string {
-  if (hour >= 2 && hour < 5) return 'You should be asleep. Then again, so should I — for a billion years.';
+  if (hour >= 2 && hour < 5)
+    return 'You should be asleep. Then again, so should I — for a billion years.';
   if (hour < 12) return 'Morning. The stars are still up; they’re slow risers.';
   if (hour < 18) return 'Afternoon. A fine time to wake a sky.';
   return 'Evening. Our hours, really.';
@@ -101,8 +102,6 @@ export function greeting(hour: number): string {
 
 export const EMPTY = {
   atlas: 'No constellations yet. The sky is a blank page, and you’re holding the pen.',
-  achievements: 'Nothing yet. Achievements are just stars you haven’t woken.',
-  orrerySlot: 'Empty slot',
 };
 
 export const SAVE_NOTICES: Record<'restored-backup' | 'repaired' | 'reset', string> = {

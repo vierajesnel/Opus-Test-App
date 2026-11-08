@@ -81,7 +81,17 @@ export function launchSky(s: SkyShared, angle: number, power: number, sparkle: n
   s.cometAlpha.value = 1;
   s.phase.value = PHASE.flying;
   s.aiming.value = false;
-  emit(s.particles.value, f.x, f.y, Math.round(14 * sparkle), 260, PARTICLE.comet, 0.6, angle + Math.PI, 1.6);
+  emit(
+    s.particles.value,
+    f.x,
+    f.y,
+    Math.round(14 * sparkle),
+    260,
+    PARTICLE.comet,
+    0.6,
+    angle + Math.PI,
+    1.6,
+  );
   return true;
 }
 
@@ -177,7 +187,17 @@ export function rearmSky(s: SkyShared, sparkle: number, rewindMs: number): void 
   s.phase.value = PHASE.aim;
   s.displayTime.value = withTiming(0, { duration: rewindMs });
   s.cometAlpha.value = withTiming(1, { duration: 300 });
-  emit(s.particles.value, w.launchX, w.launchY, Math.round(12 * sparkle), 90, PARTICLE.comet, 0.6, 0, 6.3);
+  emit(
+    s.particles.value,
+    w.launchX,
+    w.launchY,
+    Math.round(12 * sparkle),
+    90,
+    PARTICLE.comet,
+    0.6,
+    0,
+    6.3,
+  );
 }
 
 /** Forgets every star and fling: a clean slate for "Restart". */

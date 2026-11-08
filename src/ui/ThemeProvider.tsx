@@ -41,7 +41,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const scheme = useColorScheme();
   const themePref = useSave((s) => s.settings.theme);
   const motionPref = useSave((s) => s.settings.motion);
-  const osReduced = useAccessibilityFlag(AccessibilityInfo.isReduceMotionEnabled, 'reduceMotionChanged');
+  const osReduced = useAccessibilityFlag(
+    AccessibilityInfo.isReduceMotionEnabled,
+    'reduceMotionChanged',
+  );
   const screenReaderFlag = useAccessibilityFlag(
     AccessibilityInfo.isScreenReaderEnabled,
     'screenReaderChanged',
