@@ -103,7 +103,7 @@ export function SkyView(props: Props) {
   const gesture = useCompetingGestures(pan, tap);
 
   return (
-    <GestureDetector gesture={gesture}>
+    <GestureDetector gesture={gesture} touchAction="none" userSelect="none">
       <View
         style={StyleSheet.absoluteFill}
         accessible

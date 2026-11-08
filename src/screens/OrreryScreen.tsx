@@ -460,7 +460,7 @@ export function OrreryScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: theme.palette.bg }]}>
-      <GestureDetector gesture={gesture}>
+      <GestureDetector gesture={gesture} touchAction="none" userSelect="none">
         <View
           style={StyleSheet.absoluteFill}
           accessible

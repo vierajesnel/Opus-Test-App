@@ -16,13 +16,18 @@ export function createBackend(): AudioBackend {
   let loop: { id: string; source: AudioBufferSourceNode; gain: GainNode } | null = null;
 
   if (ctx && typeof document !== 'undefined') {
+    // Mobile Safari only lets audio start inside certain gestures (touchend,
+    // click), so listen for several and stop once the context is running.
+    const events = ['pointerdown', 'touchend', 'click', 'keydown'] as const;
     const unlock = () => {
-      ctx.resume().catch(() => undefined);
-      document.removeEventListener('pointerdown', unlock);
-      document.removeEventListener('keydown', unlock);
+      ctx
+        .resume()
+        .then(() => {
+          if (ctx.state === 'running') events.forEach((e) => document.removeEventListener(e, unlock));
+        })
+        .catch(() => undefined);
     };
-    document.addEventListener('pointerdown', unlock);
-    document.addEventListener('keydown', unlock);
+    events.forEach((e) => document.addEventListener(e, unlock, { passive: true }));
   }
 
   const ramp = (gain: GainNode, to: number, ms: number) => {

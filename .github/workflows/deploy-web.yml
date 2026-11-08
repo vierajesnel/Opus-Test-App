@@ -1,0 +1,58 @@
+# Publishes the web build to GitHub Pages: https://<owner>.github.io/<repo>/
+#
+# One-time setup: repository Settings → Pages → Build and deployment →
+# Source: "GitHub Actions". After that, every push to the default branch
+# (or a manual "Run workflow") redeploys.
+name: Deploy web build
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # postinstall copies Skia's canvaskit.wasm into public/.
+      - run: npm ci
+
+      - name: Type-check, lint and test
+        run: npm run verify
+
+      - name: Export web build under /<repo>/
+        run: npx expo export --platform web --output-dir dist
+        env:
+          STARWAKE_BASE_URL: /${{ github.event.repository.name }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

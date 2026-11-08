@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Full-bleed on notched phones; no pinch or double-tap zoom fighting the slingshot. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>%WEB_TITLE%</title>
+    <meta name="description" content="A gravity-slingshot puzzle where every orbit is a song." />
+
+    <!-- Install to the home screen and launch full-screen, like an app. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Starwake" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#070812" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F2E8D3" media="(prefers-color-scheme: light)" />
+
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #070812;
+        /* No pull-to-refresh or rubber-banding while dragging the sling. */
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      body {
+        overflow: hidden;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* Shown while the sky engine (≈8 MB of WebAssembly) downloads; React replaces it. */
+      .boot {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        color: #aeb4dd;
+        font: 15px/1.4 -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      .boot h1 {
+        margin: 0;
+        color: #f0f1ff;
+        font: 44px/1.1 Baskerville, 'Iowan Old Style', Georgia, serif;
+        letter-spacing: 3px;
+        font-weight: 400;
+      }
+      .boot .star {
+        width: 54px;
+        height: 54px;
+        background: #ffe7a8;
+        clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+        filter: drop-shadow(0 0 12px rgba(255, 200, 120, 0.8));
+        animation: breathe 1.8s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        50% {
+          transform: scale(0.82) rotate(45deg);
+          opacity: 0.7;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        html,
+        body {
+          background: #f2e8d3;
+        }
+        .boot {
+          color: #584a3a;
+        }
+        .boot h1 {
+          color: #271e15;
+        }
+        .boot .star {
+          background: #b9791c;
+          filter: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot .star {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Starwake needs JavaScript to wake the sky.</noscript>
+    <div id="root">
+      <div class="boot">
+        <div class="star" aria-hidden="true"></div>
+        <h1>Starwake</h1>
+        <div id="boot-status" role="status">Waking the sky…</div>
+      </div>
+    </div>
+  </body>
+</html>

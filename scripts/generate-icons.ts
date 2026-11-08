@@ -15,6 +15,8 @@ type CK = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 type Canvas = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const OUT = path.resolve(__dirname, '../assets');
+/** Web icons (home-screen install) are served from public/. */
+const WEB = path.resolve(__dirname, '../public');
 const BG = '#070812';
 
 interface Options {
@@ -143,7 +145,7 @@ function drawMotif(ck: CK, canvas: Canvas, o: Options) {
   canvas.drawCircle(hx, hy, s * 0.032, headPaint);
 }
 
-function render(ck: CK, file: string, o: Options) {
+function render(ck: CK, file: string, o: Options, dir = OUT) {
   const surface = ck.MakeSurface(o.size, o.size);
   if (!surface) throw new Error('Could not create a CanvasKit surface');
   const canvas = surface.getCanvas();
@@ -151,9 +153,9 @@ function render(ck: CK, file: string, o: Options) {
   if (o.background) drawBackground(ck, canvas, o.size);
   drawMotif(ck, canvas, o);
   const bytes = surface.makeImageSnapshot().encodeToBytes();
-  fs.writeFileSync(path.join(OUT, file), Buffer.from(bytes));
+  fs.writeFileSync(path.join(dir, file), Buffer.from(bytes));
   surface.delete();
-  console.log(`  ${file} (${o.size}×${o.size})`);
+  console.log(`  ${path.relative(process.cwd(), path.join(dir, file))} (${o.size}×${o.size})`);
 }
 
 function renderBackgroundOnly(ck: CK, file: string, size: number) {
@@ -162,7 +164,7 @@ function renderBackgroundOnly(ck: CK, file: string, size: number) {
   drawBackground(ck, canvas, size);
   fs.writeFileSync(path.join(OUT, file), Buffer.from(surface.makeImageSnapshot().encodeToBytes()));
   surface.delete();
-  console.log(`  ${file} (${size}×${size})`);
+  console.log(`  assets/${file} (${size}×${size})`);
 }
 
 async function main() {
@@ -183,6 +185,11 @@ async function main() {
   });
   render(ck, 'splash-icon.png', { size: 1024, background: false, scale: 0.9 });
   render(ck, 'favicon.png', { size: 64, background: true, scale: 1.05 });
+  fs.mkdirSync(WEB, { recursive: true });
+  render(ck, 'apple-touch-icon.png', { size: 180, background: true, scale: 0.92 }, WEB);
+  render(ck, 'icon-192.png', { size: 192, background: true, scale: 0.92 }, WEB);
+  render(ck, 'icon-512.png', { size: 512, background: true, scale: 0.92 }, WEB);
+  render(ck, 'icon-maskable-512.png', { size: 512, background: true, scale: 0.62 }, WEB);
 }
 
 void main();
