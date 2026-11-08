@@ -7,6 +7,11 @@ import { createRng, hashString } from '../rng';
 import { windowFraction } from '../solver';
 import type { LevelDef } from '../types';
 
+// These tests do real synthesis / generation on purpose. They take a few seconds
+// on a laptop and several times that on a busy 2-core CI runner, so they get
+// a realistic budget instead of Jest's 5 s default.
+jest.setTimeout(30_000);
+
 const campaign = levels as unknown as LevelDef[];
 
 describe('rng', () => {

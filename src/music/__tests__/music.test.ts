@@ -9,6 +9,11 @@ import {
   resolutionChord,
 } from '../theory';
 
+// These tests do real synthesis / generation on purpose. They take a few seconds
+// on a laptop and several times that on a busy 2-core CI runner, so they get
+// a realistic budget instead of Jest's 5 s default.
+jest.setTimeout(30_000);
+
 describe('theory', () => {
   it('tunes A4 to 440 Hz and octaves to doublings', () => {
     expect(midiToFrequency(69)).toBeCloseTo(440, 10);
