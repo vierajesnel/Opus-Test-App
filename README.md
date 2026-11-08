@@ -233,10 +233,15 @@ correct past participle after "Said to have…". The same sky always tells the s
 
 ### 5. Two art directions, one scene
 Midnight and Almanac share every SkSL shader (`src/render/shaders.ts`); each shader has a glow mode and an
-ink mode. The black-hole shader samples the backdrop texture through a child shader at positions pulled
-toward the singularity, so **nebulae (Midnight) and chart grid lines (Almanac) visibly lens around it**.
-The backdrop is rendered once into a texture at device density with a parallax margin, and shifted by
-the phone's gravity sensor.
+ink mode. The far sky is drawn once on its own static canvas (the Almanac's chart grid is computed in the
+shader too), which slides with the phone's gravity sensor for parallax. The black-hole shader takes the
+backdrop shader as a child and **re-evaluates it at positions pulled toward the singularity**, so
+nebulae (Midnight) and chart grid lines (Almanac) visibly lens around it, with no textures involved.
+
+*Why no textures?* On the web, every Skia offscreen surface opens a WebGL context that is never released.
+Phones allow only a handful of live contexts, so after a few screens the browser started evicting old
+ones, and eventually the visible sky turned white. Reproduced with a scripted session (38 evictions);
+with static canvases and shader lensing, the same session causes none.
 
 ### 6. A save file that survives
 `src/state/persistence.ts` writes a **versioned, FNV-checksummed envelope** to a primary slot, keeping the
@@ -302,8 +307,6 @@ These are honest notes, not disclaimers:
   it smaller (the HUD moves to a side column to compensate). Tablets fit well in either orientation.
 - **Daily skies aren't kept in the Star Atlas**; only Voyage constellations are.
 - Each pitch has three voices, so extremely dense Orrery music can retrigger a note rather than stack it.
-- **Web only:** browsers cap WebGL contexts (about 16), and Skia on the web uses one per canvas and offscreen
-  texture. Very long browser sessions can log "too many contexts" warnings. Phones are unaffected.
 
 ## Ideas for next versions
 

@@ -1,28 +1,25 @@
 /**
- * Draws a sky: a pre-rendered backdrop (nebula or parchment) with tilt
- * parallax, shader-driven bodies, and the per-frame scene picture.
+ * Draws a sky in two layers: a static backdrop canvas (nebula or parchment,
+ * nudged by tilt parallax as a plain view transform), and above it the live
+ * canvas with shader-driven bodies and the per-frame scene picture.
  */
 import {
   Canvas,
-  Fill,
   Group,
-  Image,
-  ImageShader,
   Path,
   Picture,
   Rect,
   Circle,
   Shader,
   Skia,
-  useTexture,
-  type SkImage,
   type SkPath,
 } from '@shopify/react-native-skia';
 import { memo, useMemo } from 'react';
-import { PixelRatio, StyleSheet } from 'react-native';
-import {
+import { StyleSheet } from 'react-native';
+import Animated, {
   SensorType,
   useAnimatedSensor,
+  useAnimatedStyle,
   useDerivedValue,
   type SharedValue,
 } from 'react-native-reanimated';
@@ -33,6 +30,7 @@ import type { Body, World } from '../engine/types';
 import { hsl, rgb, type Camera } from '../game/camera';
 import type { SkySim } from '../game/useSkySim';
 import type { Theme } from '../ui/theme';
+import { backdropUniforms, StaticBackdrop, type BackdropUniforms } from './Backdrop';
 import { backdropShader, blackHoleShader, planetShader, repulsorShader } from './shaders';
 import { drawScene, type SceneColors } from './worklets/scene';
 
@@ -58,19 +56,6 @@ export interface SkyCanvasProps {
 }
 
 const PARALLAX = 14;
-
-function gridPath(): SkPath {
-  const path = Skia.PathBuilder.Make();
-  for (let x = 0; x <= WORLD_W; x += 100) {
-    path.moveTo(x, 0);
-    path.lineTo(x, WORLD_H);
-  }
-  for (let y = 0; y <= WORLD_H; y += 100) {
-    path.moveTo(0, y);
-    path.lineTo(WORLD_W, y);
-  }
-  return path.detach();
-}
 
 /** Ruled frame with graticule ticks, like the border of an old chart. */
 function framePath(ticks: boolean): SkPath {
@@ -108,59 +93,6 @@ function framePath(ticks: boolean): SkPath {
     path.lineTo(x, y + dy * c);
   }
   return path.detach();
-}
-
-function useBackdrop(props: SkyCanvasProps) {
-  const { width, height, theme, hue, seed, camera } = props;
-  const density = Math.min(PixelRatio.get(), 2);
-  const p = theme.palette;
-  const ink = theme.glow ? 0 : 1;
-  const grid = useMemo(() => gridPath(), []);
-  const frame = useMemo(() => framePath(!theme.glow), [theme.glow]);
-  // The texture carries a parallax margin on every side so it maps 1:1 onto
-  // the oversized rect it is drawn into.
-  const texW = width + PARALLAX * 2;
-  const texH = height + PARALLAX * 2;
-  const element = (
-    <Group transform={[{ scale: density }]}>
-      <Fill>
-        <Shader
-          source={backdropShader}
-          uniforms={{
-            size: [texW, texH],
-            seed: (seed % 1000) / 37,
-            tintA: hsl(hue, 0.65, 0.42),
-            tintB: hsl(hue + 60, 0.7, 0.55),
-            base: rgb(theme.glow ? p.bgDeep : p.bg),
-            ink,
-          }}
-        />
-      </Fill>
-      <Group
-        transform={[
-          { translateX: camera.x + PARALLAX },
-          { translateY: camera.y + PARALLAX },
-          { scale: camera.scale },
-        ]}
-      >
-        {!theme.glow && (
-          <Path path={grid} style="stroke" strokeWidth={1 / camera.scale} color={p.grid} />
-        )}
-        <Path
-          path={frame}
-          style="stroke"
-          strokeWidth={(theme.glow ? 1.5 : 1.2) / camera.scale}
-          color={theme.glow ? 'rgba(200,210,255,0.22)' : p.ink}
-          opacity={theme.glow ? 1 : 0.55}
-        />
-      </Group>
-    </Group>
-  );
-  return useTexture(
-    element,
-    { width: Math.round(texW * density), height: Math.round(texH * density) },
-    [width, height, theme.name, hue, seed, camera.scale, camera.x, camera.y],
-  );
 }
 
 interface NodeProps {
@@ -228,8 +160,11 @@ const RepulsorNode = memo(function RepulsorNode({ body, index, world, clock, the
 });
 
 interface HoleProps extends NodeProps {
-  backdrop: SharedValue<SkImage | null>;
-  imageRect: SharedValue<{ x: number; y: number; width: number; height: number }>;
+  /** The backdrop's uniforms: the hole re-evaluates the backdrop shader to lens it. */
+  backdrop: BackdropUniforms;
+  /** World → backdrop-canvas mapping (live, because parallax moves the backdrop). */
+  lensScale: number;
+  lensOrigin: SharedValue<number[]>;
 }
 
 const BlackHoleNode = memo(function BlackHoleNode({
@@ -239,7 +174,8 @@ const BlackHoleNode = memo(function BlackHoleNode({
   clock,
   theme,
   backdrop,
-  imageRect,
+  lensScale,
+  lensOrigin,
 }: HoleProps) {
   const reach = body.r * 5;
   const center = useDerivedValue(() => {
@@ -258,11 +194,13 @@ const BlackHoleNode = memo(function BlackHoleNode({
     time: clock.value,
     ink: theme.glow ? 0 : 1,
     inkCol: rgb(theme.palette.ink),
+    camScale: lensScale,
+    camOrigin: lensOrigin.value,
   }));
   return (
     <Rect rect={rect}>
       <Shader source={blackHoleShader} uniforms={uniforms}>
-        <ImageShader image={backdrop} fit="fill" rect={imageRect} />
+        <Shader source={backdropShader} uniforms={backdrop} />
       </Shader>
     </Rect>
   );
@@ -271,7 +209,14 @@ const BlackHoleNode = memo(function BlackHoleNode({
 export function SkyCanvas(props: SkyCanvasProps) {
   const { sim, world, camera, width, height, theme, preview, edges, head, trail, aurora, tilt } =
     props;
-  const backdrop = useBackdrop(props);
+  const { hue, seed } = props;
+  const texW = width + PARALLAX * 2;
+  const texH = height + PARALLAX * 2;
+  const backdrop = useMemo(
+    () => backdropUniforms(texW, texH, theme, hue, seed, camera, PARALLAX),
+    [texW, texH, theme, hue, seed, camera],
+  );
+  const frame = useMemo(() => framePath(!theme.glow), [theme.glow]);
   const gravity = useAnimatedSensor(SensorType.GRAVITY, { interval: 32 });
   const extra = props.extraComets;
   const extraTrails = props.extraTrails;
@@ -283,14 +228,15 @@ export function SkyCanvas(props: SkyCanvasProps) {
     return { x: clamp(-g.x * 1.6), y: clamp(g.y * 0.9 + 6) - 6 };
   });
 
-  const imageRect = useDerivedValue(() => ({
-    x: (parallax.value.x - PARALLAX - camera.x) / camera.scale,
-    y: (parallax.value.y - PARALLAX - camera.y) / camera.scale,
-    width: (width + PARALLAX * 2) / camera.scale,
-    height: (height + PARALLAX * 2) / camera.scale,
+  // The backdrop canvas sits at (-P, -P) and slides with the parallax; a
+  // world point p lands on its canvas at p·scale + camera + P − parallax.
+  const backdropStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: parallax.value.x }, { translateY: parallax.value.y }],
   }));
-  const imageX = useDerivedValue(() => parallax.value.x - PARALLAX);
-  const imageY = useDerivedValue(() => parallax.value.y - PARALLAX);
+  const lensOrigin = useDerivedValue(() => [
+    camera.x + PARALLAX - parallax.value.x,
+    camera.y + PARALLAX - parallax.value.y,
+  ]);
 
   const colors = useMemo<SceneColors>(
     () => ({
@@ -347,54 +293,74 @@ export function SkyCanvas(props: SkyCanvasProps) {
   );
 
   return (
-    <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Fill color={theme.glow ? theme.palette.bgDeep : theme.palette.bg} />
-      <Image
-        image={backdrop}
-        x={imageX}
-        y={imageY}
-        width={width + PARALLAX * 2}
-        height={height + PARALLAX * 2}
-        fit="fill"
-      />
-      <Group transform={transform}>
-        {world.bodies.map((b, i) =>
-          b.kind === 'planet' ? (
-            <PlanetNode
-              key={`${i}-${b.kind}-${b.r}`}
-              body={b}
-              index={i}
-              world={sim.world}
-              time={sim.displayTime}
-              clock={sim.clock}
-              theme={theme}
+    <>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.backdrop, { width: texW, height: texH }, backdropStyle]}
+      >
+        <StaticBackdrop width={texW} height={texH} uniforms={backdrop}>
+          <Group
+            transform={[
+              { translateX: camera.x + PARALLAX },
+              { translateY: camera.y + PARALLAX },
+              { scale: camera.scale },
+            ]}
+          >
+            <Path
+              path={frame}
+              style="stroke"
+              strokeWidth={(theme.glow ? 1.5 : 1.2) / camera.scale}
+              color={theme.glow ? 'rgba(200,210,255,0.22)' : theme.palette.ink}
+              opacity={theme.glow ? 1 : 0.55}
             />
-          ) : b.kind === 'repulsor' ? (
-            <RepulsorNode
-              key={`${i}-${b.kind}-${b.r}`}
-              body={b}
-              index={i}
-              world={sim.world}
-              time={sim.displayTime}
-              clock={sim.clock}
-              theme={theme}
-            />
-          ) : (
-            <BlackHoleNode
-              key={`${i}-${b.kind}-${b.r}`}
-              body={b}
-              index={i}
-              world={sim.world}
-              time={sim.displayTime}
-              clock={sim.clock}
-              theme={theme}
-              backdrop={backdrop}
-              imageRect={imageRect}
-            />
-          ),
-        )}
-        <Picture picture={picture} />
-      </Group>
-    </Canvas>
+          </Group>
+        </StaticBackdrop>
+      </Animated.View>
+      <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Group transform={transform}>
+          {world.bodies.map((b, i) =>
+            b.kind === 'planet' ? (
+              <PlanetNode
+                key={`${i}-${b.kind}-${b.r}`}
+                body={b}
+                index={i}
+                world={sim.world}
+                time={sim.displayTime}
+                clock={sim.clock}
+                theme={theme}
+              />
+            ) : b.kind === 'repulsor' ? (
+              <RepulsorNode
+                key={`${i}-${b.kind}-${b.r}`}
+                body={b}
+                index={i}
+                world={sim.world}
+                time={sim.displayTime}
+                clock={sim.clock}
+                theme={theme}
+              />
+            ) : (
+              <BlackHoleNode
+                key={`${i}-${b.kind}-${b.r}`}
+                body={b}
+                index={i}
+                world={sim.world}
+                time={sim.displayTime}
+                clock={sim.clock}
+                theme={theme}
+                backdrop={backdrop}
+                lensScale={camera.scale}
+                lensOrigin={lensOrigin}
+              />
+            ),
+          )}
+          <Picture picture={picture} />
+        </Group>
+      </Canvas>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: { position: 'absolute', left: -PARALLAX, top: -PARALLAX },
+});

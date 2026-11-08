@@ -36,7 +36,12 @@ float fbm(float2 p) {
 }
 `;
 
-/** Backdrop. Midnight: domain-warped nebula and a hashed star field. Almanac: parchment. */
+/**
+ * Backdrop. Midnight: domain-warped nebula and a hashed star field. Almanac:
+ * parchment with the chart's coordinate grid. The grid is computed here
+ * (rather than drawn as lines) so black holes, which re-evaluate this shader
+ * at bent coordinates, visibly warp it.
+ */
 export const backdropShader = compile(
   'backdrop',
   `
@@ -46,6 +51,12 @@ uniform half3 tintA;
 uniform half3 tintB;
 uniform half3 base;
 uniform float ink;
+// Grid: world units per point, where world (0,0) sits, the world's size, and
+// the line colour. camScale = 0 draws no grid.
+uniform float camScale;
+uniform float2 camOrigin;
+uniform float2 world;
+uniform half4 gridCol;
 ${NOISE}
 half4 main(float2 pos) {
   float2 uv = pos / max(size.x, size.y);
@@ -57,6 +68,15 @@ half4 main(float2 pos) {
     float vignette = smoothstep(0.35, 0.85, length(c * float2(1.0, 0.8)));
     half3 col = base * (0.94 + mottle * 0.1 - grain) - half3(0.10, 0.12, 0.16) * fox;
     col *= 1.0 - vignette * 0.16;
+    if (camScale > 0.0) {
+      float2 w = (pos - camOrigin) / camScale;
+      if (w.x >= 0.0 && w.x <= world.x && w.y >= 0.0 && w.y <= world.y) {
+        // Distance to the nearest 100-unit grid line, in points.
+        float2 g = abs(fract(w / 100.0 + 0.5) - 0.5) * 100.0 * camScale;
+        float line = 1.0 - smoothstep(0.3, 1.1, min(g.x, g.y));
+        col = mix(col, gridCol.rgb, line * gridCol.a);
+      }
+    }
     return half4(col, 1.0);
   }
   float2 q = float2(fbm(uv * 2.2 + seed), fbm(uv * 2.2 - seed + 3.1));
@@ -131,9 +151,10 @@ half4 main(float2 p) {
 );
 
 /**
- * Black hole with gravitational lensing: the backdrop (a child shader) is
- * sampled at positions pulled toward the singularity, by an amount that
+ * Black hole with gravitational lensing: the backdrop shader (a child) is
+ * re-evaluated at positions pulled toward the singularity, by an amount that
  * falls off with distance — so nebulae and grid lines visibly bend around it.
+ * camScale/camOrigin map world coordinates into the backdrop's coordinates.
  */
 export const blackHoleShader = compile(
   'blackhole',
@@ -144,6 +165,8 @@ uniform float radius;
 uniform float time;
 uniform float ink;
 uniform half3 inkCol;
+uniform float camScale;
+uniform float2 camOrigin;
 half4 main(float2 p) {
   float2 d = p - center;
   float r = length(d);
@@ -151,7 +174,7 @@ half4 main(float2 p) {
   float fade = smoothstep(reach, reach * 0.7, r);
   float bend = radius * radius * 2.6 / max(r, radius * 0.6) * fade;
   float2 dir = d / max(r, 0.001);
-  half4 bg = backdrop.eval(p - dir * bend);
+  half4 bg = backdrop.eval((p - dir * bend) * camScale + camOrigin);
   float a = atan(d.y, d.x);
   float horizon = smoothstep(radius * 1.04, radius * 0.92, r);
   float ring = exp(-pow((r - radius * 1.45) / (radius * 0.14), 2.0));

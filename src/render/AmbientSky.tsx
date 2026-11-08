@@ -7,23 +7,18 @@ import {
   BlendMode,
   BlurStyle,
   Canvas,
-  Fill,
-  Group,
-  Image,
   Picture,
-  Shader,
   Skia,
   StrokeCap,
   PaintStyle,
-  useTexture,
 } from '@shopify/react-native-skia';
 import { memo, useMemo } from 'react';
-import { PixelRatio, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useDerivedValue, useFrameCallback, useSharedValue } from 'react-native-reanimated';
 
-import { hsl, rgb } from '../game/camera';
+import { rgb } from '../game/camera';
 import type { Theme } from '../ui/theme';
-import { backdropShader } from './shaders';
+import { backdropUniforms, StaticBackdrop } from './Backdrop';
 
 interface Props {
   width: number;
@@ -168,33 +163,18 @@ export const AmbientSky = memo(function AmbientSky({
     return rec.finishRecordingAsPicture();
   });
 
-  // The nebula is costly to evaluate, so it is rendered once into a texture.
-  const density = Math.min(PixelRatio.get(), 2);
-  const backdrop = useTexture(
-    <Group transform={[{ scale: density }]}>
-      <Fill>
-        <Shader
-          source={backdropShader}
-          uniforms={{
-            size: [width, height],
-            seed: 3.7,
-            tintA: hsl(hue, 0.65, 0.42),
-            tintB: hsl(hue + 60, 0.7, 0.55),
-            base: rgb(theme.glow ? theme.palette.bgDeep : theme.palette.bg),
-            ink: theme.glow ? 0 : 1,
-          }}
-        />
-      </Fill>
-    </Group>,
-    { width: Math.round(width * density), height: Math.round(height * density) },
-    [width, height, theme.name, hue],
+  // The nebula is drawn once on a static canvas; only the orbits animate.
+  const backdrop = useMemo(
+    () => backdropUniforms(width, height, theme, hue, 137),
+    [width, height, theme, hue],
   );
 
   return (
-    <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Fill color={theme.glow ? theme.palette.bgDeep : theme.palette.bg} />
-      <Image image={backdrop} x={0} y={0} width={width} height={height} fit="fill" />
-      <Picture picture={picture} />
-    </Canvas>
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <StaticBackdrop width={width} height={height} uniforms={backdrop} />
+      <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Picture picture={picture} />
+      </Canvas>
+    </View>
   );
 });
